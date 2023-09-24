@@ -55,6 +55,11 @@ int deleteDataBlock(DataBlock *blockToDelete, BlockManager& blockManager) {
         // Block not found
         return -1;
     }
+    else if (deletedIndexBlock == (numDataBlocks - 1)) {
+        // Last Block of Array
+        free(blockToDelete);
+        return 0;
+    }
 
     // Free the Memory
     free(blockToDelete);
