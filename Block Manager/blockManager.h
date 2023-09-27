@@ -94,7 +94,7 @@ class BlockManager {
          * 
          * @return Record*
          */
-        Record *findRecord(float keyValue);
+        std::pair<int,int> findRecord(float keyValue);
         /**
          * @brief 
          * 

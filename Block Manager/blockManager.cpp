@@ -10,6 +10,11 @@
 float byteToFloat(unsigned char *recordKeyBitArray) {}
 
 
+/**
+ * @brief Create a Data Block object
+ * 
+ * @return DataBlock* 
+ */
 DataBlock* BlockManager :: createDataBlock() {
     // Fix the Size of the Data Block to 400B
     size_t dataBlockSize = 400;
@@ -34,6 +39,12 @@ DataBlock* BlockManager :: createDataBlock() {
 }
 
 
+/**
+ * @brief Indicates the Datablock to be deleted
+ * 
+ * @param blockToDelete 
+ * @return int 
+ */
 int BlockManager :: deleteDataBlock(DataBlock *blockToDelete) {
     // Retrieve the Data Block to be deleted
     int numDataBlocks = this->numDataBlocks;
@@ -82,54 +93,82 @@ int BlockManager :: deleteDataBlock(DataBlock *blockToDelete) {
 
 /**
  * @brief Finding a record with a target key value from all the initialised Data Blocks
+ * Returns 2 integers, which corresponds to block index and record index. For insertion, deletion or even when record is not found  
  * 
  * @param keyValue 
  * @return Record* 
  */
-Record * BlockManager :: findRecord(float keyValue) {
-    // Initialise Variables
+std::pair<int,int> BlockManager :: findRecord(float keyValue) {
+    // Initialise Index Variables
     int start = 0;
     int end = this->numDataBlocks - 1;
     int curr = 0;
+
+    // Initialise Variables to Return
+    int targetBlockIndex = -1;
+    int targetRecordIndex = -1;
     
-    // Use Binary Search to search through the entire list of blocks available
+    // Use Binary Search to determine the Index of the Block
     while (start <= end) {
-         // Retrieve first record from the Current Block
+        // Retrieve the Middle Data Block
         curr = start + (end - start) / 2;
         DataBlock *currBlock = this->listBlocks[curr];
+
+        // Retrieve the first and last records from the Middle (Current) Block
         Record firstRecord = currBlock->records[0];
         Record lastRecord = currBlock->records[currBlock->numRecords - 1];
 
-        // Parse the Records to Float Values so we can compare
+        // Parse the Key Values of Records to Float Values for Comparison
         float firstRecordKeyValue = byteToFloat(firstRecord.fgPctHomeBitArray);
         float lastRecordKeyValue = byteToFloat(lastRecord.fgPctHomeBitArray);
 
-        // Check if the target keyValue is within
+        // Check if the target keyValue is within the Current Block
         if (keyValue > firstRecordKeyValue && keyValue > lastRecordKeyValue) {
-            // Curr Block is too Small
+            // Curr Block is too Small, Search the Bigger Half
             start = curr + 1;
         }
         else if (keyValue < firstRecordKeyValue && keyValue < lastRecordKeyValue) {
-            // Curr Block is too Big
+            // Curr Block is too Big, Search the Smaller half
             end = curr - 1;
         }
         else if (keyValue > firstRecordKeyValue && keyValue < lastRecordKeyValue) {
-            // Record should be within current block
-            int numRecords = currBlock->numRecords;
+            // Found Target Block, record the index
+            targetBlockIndex = curr;
 
-            // Iterate over all the Records to see if we can find
+            // Iterate over all the Records to check if target Record is present
+            int numRecords = currBlock->numRecords;
             for (int i{0}; i < numRecords; i += 1) {
                 Record currRecord = currBlock->records[i];
                 float currRecordKeyValue = byteToFloat(currRecord.fgPctHomeBitArray);
 
                 if (currRecordKeyValue == keyValue) {
-                    // Found the First Occurrence Record
-                    return &currRecord;
+                    // Found the First Occurrence of Target Record
+                    targetRecordIndex = i;
+
+                    // Case 1: First Target Record is found (Selection or Deletion)
+                    return std::make_pair(targetBlockIndex, targetRecordIndex);
                 }
             }
 
-            // Record does not exist
-            return NULL;
+            // Non-Existent Record
+            int insertionIndex = 0;
+
+            // Determine where to place the record to be inserted
+            for (int i{0}; i < numRecords; i += 1) {
+                // Retrieve the Record
+                Record currRecord = currBlock->records[i];
+                float currRecordKeyValue = byteToFloat(currRecord.fgPctHomeBitArray);
+
+                // Find the first record whose keyValue is larger
+                if (currRecordKeyValue > keyValue) {
+                    targetRecordIndex = i;
+
+                    // Case 2: Insertion Record's Index found
+                    return std::make_pair(targetBlockIndex, targetRecordIndex);
+                }
+            }
+
+            // Should not have a case where the target index is larger than all available indexes
         }
         else {
             // Should not be possible if ordered
@@ -137,8 +176,36 @@ Record * BlockManager :: findRecord(float keyValue) {
         }
     }
 
-    // Target Key must have a value larger than the largest or smaller than the smallest in the database
-    return NULL;
+    // Case 3: Target Key is the largest or smallest in the database
+    // Retrieve the Smallest Record
+    DataBlock *smallestDataBlock = this->listBlocks[0];
+    Record smallestRecord = smallestDataBlock->records[0];
+
+    // Evaluate if the target to be inserted is smaller
+    float smallestRecordKeyValue = byteToFloat(smallestRecord.fgPctHomeBitArray);
+    if (keyValue < smallestRecordKeyValue) {
+        // TODO evaluate if need to use overflow block
+        return std::make_pair(0, 0);
+    }
+    else if (keyValue == smallestRecordKeyValue) {
+        std::cout << "Equals current smallest record" << std::endl;
+    }
+
+    // Repeat for Largest Record
+    DataBlock *largestDataBlock = this->listBlocks[this->numDataBlocks - 1];
+    Record largestRecord = largestDataBlock->records[largestDataBlock->numRecords - 1];
+
+    float largestRecordKeyValue = byteToFloat(largestRecord.fgPctHomeBitArray);
+    if (keyValue > largestRecordKeyValue) {
+        return std::make_pair((this->numDataBlocks - 1), (largestDataBlock->numRecords - 1));
+    }
+    else if (keyValue == largestRecordKeyValue) {
+        std::cout << "Equals current largest record" << std::endl;
+    }
+
+    // Error
+    std::cout << "Error!! Most likely inserted record == smallest or largest as not handled yet" << std::endl;
+    return std::make_pair(-1, -1);
 }
 
 
