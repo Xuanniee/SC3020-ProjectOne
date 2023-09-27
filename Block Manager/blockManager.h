@@ -10,31 +10,30 @@
 
 typedef struct record {
     // Record Header is a bit array of 9 bits to correspond to each of the columns
-    unsigned char recordHeader[9];
+    // unsigned char recordHeader[9];
+    short int recorderHeader;
 
     // Field Headers for the 9 Attributes
-    // Format will be their size and the Pointers to their location
-    unsigned char gameDateEstBitArray[10];
+    unsigned char gameDateEstBitArray[((10 + 7) / 8)]; // Refers to the Number of Bytes
 
-    unsigned char teamIdHomeBitArray[31];
+    unsigned char teamIdHomeBitArray[((31 + 7) / 8)];
 
-    unsigned char ptsHomeBitArray[1];
+    unsigned char ptsHomeBitArray[((1 + 7) / 8)];
 
     // Primary Key; Float
-    unsigned char fgPctHomeBitArray[11];
+    unsigned char fgPctHomeBitArray[((11 + 7) / 8)];
 
     // Requires 11 bits
-    unsigned char ftPctHomeBitArray[11];
+    unsigned char ftPctHomeBitArray[((11 + 7) / 8)];
 
     // Requires 11 bits
-    unsigned char fg3PctHomeBitArray[11];
+    unsigned char fg3PctHomeBitArray[((11 + 7) / 8)];
 
-    unsigned char astHomeBitArray[1];
+    unsigned char astHomeBitArray[((1 + 7) / 8)];
 
-    unsigned char rebHomeBitArray[1];
+    unsigned char rebHomeBitArray[((1 + 7) / 8)];
 
-    // Basically a 1 bit Boolean
-    unsigned char homeTeamWins[1];
+    bool homeTeamWins;
 } Record;
 
 
