@@ -49,10 +49,70 @@ typedef struct dataBlock {
 
 } DataBlock;
 
-typedef struct blockManager {
-    // Attributes
-    int numDataBlocks = 0;
-    int numRecords = 0;
-    DataBlock *listBlocks[MAX_BLOCKS];     // Array of DataBlocks
+// typedef struct blockManager {
+//     // Attributes
+//     int numDataBlocks = 0;
+//     int numRecords = 0;
+//     DataBlock *listBlocks[MAX_BLOCKS];     // Array of DataBlocks
 
-} BlockManager;
+// } BlockManager;
+
+class BlockManager {
+    private:
+        int numDataBlocks = 0;
+        int numRecords = 0;
+        DataBlock *listBlocks[MAX_BLOCKS];
+        int MAX_BLOCK_SIZE = 400;
+
+    public:
+        DataBlock** getListBlocks() {
+            return this->listBlocks;
+        };
+
+        int getNumBlocks() {
+            return this->numDataBlocks;
+        }
+
+        int getTotalRecords() {
+            return this->numRecords;
+        }
+
+        /**
+         * @brief Create a Data Block object
+         * 
+         * @return DataBlock* 
+         */
+        DataBlock* createDataBlock();
+        /**
+         * @brief Delete a Data Block object
+         * 
+         * @return int
+         */
+        int deleteDataBlock(DataBlock *blockToDelete);
+        /**
+         * @brief find a record given a keyValue, or the appropriate place to insert a record with the given key.
+         * 
+         * @return Record*
+         */
+        Record *findRecord(float keyValue);
+        /**
+         * @brief 
+         * 
+         * @param blockIndex - the index of the target block
+         * @param recordIndex - the index of the target record within the block
+         * @param nShift - the number of records to shift by
+         * 
+         * @return void
+         */
+        void shiftRecordsDown(int blockIndex, int offset, int nShift);
+        /**
+         * @brief 
+         * 
+         * @param blockIndex - the index of the target block
+         * @param recordIndex - the index of the target record within the block
+         * @param nShift - the number of records to shift by
+         * 
+         * @return void
+         */
+        void shiftRecordsUp(int blockIndex, int recordIndex, int nShift);
+};
