@@ -1,13 +1,11 @@
 #include <iostream>
+#include "shift.h"
 
 using namespace std;
 
 int MAX_BLOCK_SIZE = 2;
 
-struct block {
-    int num = 0;
-    uint * data;
-};
+
 
 void shiftDown(block** BArray, int BOffset, int offset, int nShift) {
 
@@ -51,7 +49,7 @@ void shiftDown(block** BArray, int BOffset, int offset, int nShift) {
         memcpy(tempHoldingArea, &((*(BArray + BOffset))->data[MAX_BLOCK_SIZE-nShift]), sizeof(uint)*nShift);
 
         // Do the actual shifting of data within the block itself
-        memcpy(&((*(BArray + BOffset))->data[offset + nShift]), &((*(BArray + BOffset))->data[offset]), sizeof(uint)*toShift);
+        memmove(&((*(BArray + BOffset))->data[offset + nShift]), &((*(BArray + BOffset))->data[offset]), sizeof(uint)*toShift);
 
         // Write the mainHoldingArea to the front of the block
         memcpy(&((*(BArray + BOffset))->data[offset]), mainHoldingArea, sizeof(uint)*nShift);
@@ -66,7 +64,7 @@ void shiftDown(block** BArray, int BOffset, int offset, int nShift) {
     }
 
     // One final shift at the last block.
-    memcpy(&((*(BArray + BOffset))->data[offset + nShift]), &((*(BArray + BOffset))->data[offset]), sizeof(uint)*toShift);
+    memmove(&((*(BArray + BOffset))->data[offset + nShift]), &((*(BArray + BOffset))->data[offset]), sizeof(uint)*toShift);
 
     // Write the main holding area to the front of the block
     memcpy(&((*(BArray + BOffset))->data[0]), mainHoldingArea, sizeof(uint)*nShift);
@@ -75,16 +73,18 @@ void shiftDown(block** BArray, int BOffset, int offset, int nShift) {
     free(tempHoldingArea);
 }
 
-/*
-    Assuming that theres no overflow on the block at the top of the chain where the shift is meant to fill gaps,
-    and that offset is the starting location of the gap in the original block.
 
-    since shiftUp will only occur if theres a deletion, therefore nShift starting from the offset+nShift within the block should
-    not overwrite any existing data.
-
-    *****TO CONFIRM****
-*/
 void shiftUp(block** BArray, int BOffset, int BArraySize, int offset, int nShift) {
+    /*
+        Assuming that theres no overflow on the block at the top of the chain where the shift is meant to fill gaps,
+        and that offset is the starting location of the gap in the original block.
+
+        since shiftUp will only occur if theres a deletion, therefore nShift starting from the offset+nShift within the block should
+        not overwrite any existing data.
+
+        *****TO CONFIRM****
+    */
+
     // To catch invalid input
     if (nShift <= 0 || offset < 0 || BOffset < 0 || offset > MAX_BLOCK_SIZE || BArraySize - 1 < BOffset) {
         return;
@@ -99,7 +99,7 @@ void shiftUp(block** BArray, int BOffset, int BArraySize, int offset, int nShift
         memcpy(tempHoldingArea, &((*(BArray + i))->data[0]), sizeof(uint)*nShift);
 
         // Shift the data within the block
-        memcpy(&((*(BArray + i))->data[0]), &((*(BArray + i))->data[nShift]), sizeof(uint)*(MAX_BLOCK_SIZE - nShift));
+        memmove(&((*(BArray + i))->data[0]), &((*(BArray + i))->data[nShift]), sizeof(uint)*(MAX_BLOCK_SIZE - nShift));
 
         // Write the mainHoldingArea to the end of the block
         memcpy(&((*(BArray + i))->data[MAX_BLOCK_SIZE - nShift]), mainHoldingArea, sizeof(uint)*nShift);
@@ -111,7 +111,7 @@ void shiftUp(block** BArray, int BOffset, int BArraySize, int offset, int nShift
     // Number of records remaining at the end of the original block after the gap
     int toShift = MAX_BLOCK_SIZE - offset - nShift;
     // Do the shifting in the main block that has gaps to fill
-    memcpy(&((*(BArray + BOffset))->data[offset]), &((*(BArray + BOffset))->data[offset - nShift]), sizeof(uint)*toShift);
+    memmove(&((*(BArray + BOffset))->data[offset]), &((*(BArray + BOffset))->data[offset - nShift]), sizeof(uint)*toShift);
 
     // Write the mainHoldingArea to the end of the block
     memcpy(&((*(BArray + BOffset))->data[MAX_BLOCK_SIZE - nShift]), mainHoldingArea, sizeof(uint)*nShift);
@@ -159,8 +159,8 @@ int main() {
         cout << b3.data[i] << endl;
     }
 
-    // shiftDown(BArray, 0, 1, 1);
-    shiftUp(BArray, 0, 3, 1, 1);
+    shiftDown(BArray, 0, 1, 1);
+    // shiftUp(BArray, 0, 3, 1, 1);
 
     cout << "AFTER SHIFT" << endl;
     cout << "B1" << endl;
