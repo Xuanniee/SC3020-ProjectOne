@@ -183,8 +183,8 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
 
     // Evaluate if the target to be inserted is smaller
     float smallestRecordKeyValue = byteToFloat(smallestRecord.fgPctHomeBitArray);
-    if (keyValue < smallestRecordKeyValue) {
-        // TODO evaluate if need to use overflow block
+    // If it is a duplicate key, it will take the smallest
+    if (keyValue <= smallestRecordKeyValue) {
         return std::make_pair(0, 0);
     }
     else if (keyValue == smallestRecordKeyValue) {
@@ -196,7 +196,8 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
     Record largestRecord = largestDataBlock->records[largestDataBlock->numRecords - 1];
 
     float largestRecordKeyValue = byteToFloat(largestRecord.fgPctHomeBitArray);
-    if (keyValue > largestRecordKeyValue) {
+    // If it is a duplicate key, it will take the largest
+    if (keyValue >= largestRecordKeyValue) {
         return std::make_pair((this->numDataBlocks - 1), (largestDataBlock->numRecords - 1));
     }
     else if (keyValue == largestRecordKeyValue) {
