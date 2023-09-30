@@ -14,11 +14,11 @@ typedef struct record {
     short int recorderHeader;
 
     // Field Headers for the 9 Attributes
-    unsigned char gameDateEstBitArray[((80 + 7) / 8)]; // Refers to the Number of Bytes
+    unsigned char gameDateEstBitArray[((1 + 7) / 8)]; // Refers to the Number of Bytes
 
     unsigned char teamIdHomeBitArray[((31 + 7) / 8)];
 
-    unsigned char ptsHomeBitArray[((8 + 7) / 8)];
+    unsigned char ptsHomeBitArray[((1 + 7) / 8)];
 
     // Primary Key; Float
     unsigned char fgPctHomeBitArray[((11 + 7) / 8)];
@@ -29,9 +29,9 @@ typedef struct record {
     // Requires 11 bits
     unsigned char fg3PctHomeBitArray[((11 + 7) / 8)];
 
-    unsigned char astHomeBitArray[((8 + 7) / 8)];
+    unsigned char astHomeBitArray[((1 + 7) / 8)];
 
-    unsigned char rebHomeBitArray[((8 + 7) / 8)];
+    unsigned char rebHomeBitArray[((1 + 7) / 8)];
 
     bool homeTeamWins;
 } Record;
