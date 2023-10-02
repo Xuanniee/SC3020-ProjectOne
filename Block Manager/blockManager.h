@@ -14,7 +14,7 @@ typedef struct record {
     short int recorderHeader;
 
     // Field Headers for the 9 Attributes
-    unsigned char gameDateEstBitArray[((10 + 7) / 8)]; // Refers to the Number of Bytes
+    unsigned char gameDateEstBitArray[((1 + 7) / 8)]; // Refers to the Number of Bytes
 
     unsigned char teamIdHomeBitArray[((31 + 7) / 8)];
 
