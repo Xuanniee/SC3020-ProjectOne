@@ -115,4 +115,10 @@ class BlockManager {
          * @return void
          */
         void shiftRecordsUp(int blockIndex, int recordIndex, int nShift);
+        /**
+         * @brief Insert a record into a sequential file based on value of FG3_PCT_home
+         * 
+         * @param rec - record to be inserted
+        */
+        void insertRecord(Record rec);
 };
