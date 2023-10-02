@@ -198,7 +198,7 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
     float largestRecordKeyValue = byteToFloat(largestRecord.fgPctHomeByteArray);
     // If it is a duplicate key, it will take the largest
     if (keyValue >= largestRecordKeyValue) {
-        return std::make_pair((this->numDataBlocks - 1), (largestDataBlock->numRecords - 1));
+        return std::make_pair((this->numDataBlocks - 1), (largestDataBlock->numRecords));
     }
     else if (keyValue == largestRecordKeyValue) {
         std::cout << "Equals current largest record" << std::endl;
@@ -232,7 +232,7 @@ void BlockManager :: shiftRecordsDown(int blockIndex, int recordIndex, int nShif
     Record* mainHoldingArea = (Record*)calloc(nShift, sizeof(Record));
     Record* tempHoldingArea = (Record*)malloc(sizeof(Record)*nShift);
 
-    if (mainHoldingArea == NULL or tempHoldingArea == NULL) {
+    if (mainHoldingArea == NULL || tempHoldingArea == NULL) {
         std::cout << "Unable to shift records" << std::endl;
         exit(0);
     }
@@ -299,7 +299,7 @@ void BlockManager :: shiftRecordsUp(int blockIndex, int recordIndex, int nShift)
     Record* mainHoldingArea = (Record*)calloc(nShift, sizeof(Record));
     Record* tempHoldingArea = (Record*)malloc(sizeof(Record)*nShift);
 
-    if (mainHoldingArea == NULL or tempHoldingArea == NULL) {
+    if (mainHoldingArea == NULL || tempHoldingArea == NULL) {
         std::cout << "Unable to shift records" << std::endl;
         exit(0);
     }
@@ -329,4 +329,22 @@ void BlockManager :: shiftRecordsUp(int blockIndex, int recordIndex, int nShift)
 
     free(mainHoldingArea);
     free(tempHoldingArea);
+}
+
+
+void BlockManager :: insertRecord(Record rec) {
+    int ib, ir;
+    float pk = byteToFloat(rec.fg3PctHomeByteArray);
+
+    std::tie(ib, ir) = findRecord(pk);
+
+    // create new data block if all blocks are full
+    if (listBlocks[numDataBlocks-1]->numRecords == MAX_RECORDS) createDataBlock(); 
+    
+
+    ib += ir / MAX_RECORDS;
+    ir %= MAX_RECORDS;
+
+    shiftRecordsDown(ib, ir, 1);
+    listBlocks[ib]->records[ir] = rec;
 }

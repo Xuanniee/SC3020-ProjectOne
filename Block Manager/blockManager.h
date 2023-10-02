@@ -19,8 +19,6 @@ typedef struct record {
 
     // Field Headers for the 9 Attributes
     // First 2 attributes placed on top to reduct padding size
-    unsigned char rebHome;
-
     bool homeTeamWins;
 
     // 3B is enough to represents all the dates we need but 4B for ease
@@ -124,4 +122,10 @@ class BlockManager {
          * @return void
          */
         void shiftRecordsUp(int blockIndex, int recordIndex, int nShift);
+        /**
+         * @brief Insert a record into a sequential file based on value of FG3_PCT_home
+         * 
+         * @param rec - record to be inserted
+        */
+        void insertRecord(Record rec);
 };
