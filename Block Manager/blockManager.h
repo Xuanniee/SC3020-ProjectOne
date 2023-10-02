@@ -3,37 +3,46 @@
 #include <stdlib.h>
 #include <iostream>
 
-// Maximum number of Records in a Data Block {400B / 23B} shud be 17, but I use 10 to prevent memory issues for now
-#define MAX_RECORDS 10
+// Maximum number of Records in a Data Block {400B - 4B / 20B} should be 19 Blocks, because of block 
+// header storing the attribute
+#define MAX_RECORDS 19
 // Maximum number of Blocks (500MB / 400B)
 #define MAX_BLOCKS 1250000
 
+/**
+ * 20B in total for a single record
+ * assuming boolean is 1B
+ */
 typedef struct record {
     // Record Header is a bit array of 9 bits to correspond to each of the columns
-    // unsigned char recordHeader[9];
     short int recorderHeader;
 
     // Field Headers for the 9 Attributes
-    unsigned char gameDateEstBitArray[((10 + 7) / 8)]; // Refers to the Number of Bytes
-
-    unsigned char teamIdHomeBitArray[((31 + 7) / 8)];
-
-    unsigned char ptsHomeBitArray[((1 + 7) / 8)];
-
-    // Primary Key; Float
-    unsigned char fgPctHomeBitArray[((11 + 7) / 8)];
-
-    // Requires 11 bits
-    unsigned char ftPctHomeBitArray[((11 + 7) / 8)];
-
-    // Requires 11 bits
-    unsigned char fg3PctHomeBitArray[((11 + 7) / 8)];
-
-    unsigned char astHomeBitArray[((1 + 7) / 8)];
-
-    unsigned char rebHomeBitArray[((1 + 7) / 8)];
+    // First 2 attributes placed on top to reduct padding size
+    unsigned char rebHome;
 
     bool homeTeamWins;
+
+    // 3B is enough to represents all the dates we need but 4B for ease
+    int gameDateEst; 
+
+    // Similar format to gameDateEst, so use same data size
+    int teamIdHome; 
+
+    // Integer by nature of data
+    unsigned char ptsHome;
+
+    // Primary Key; Float; Uses 2B
+    unsigned char fgPctHomeByteArray[2];
+
+    // Same reason as above
+    unsigned char ftPctHomeByteArray[2];
+
+    // Same reason as above
+    unsigned char fg3PctHomeByteArray[2];
+
+    // Same as ptsHome
+    unsigned char astHome;
 } Record;
 
 

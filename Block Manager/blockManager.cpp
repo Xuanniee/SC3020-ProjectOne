@@ -119,8 +119,8 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
         Record lastRecord = currBlock->records[currBlock->numRecords - 1];
 
         // Parse the Key Values of Records to Float Values for Comparison
-        float firstRecordKeyValue = byteToFloat(firstRecord.fgPctHomeBitArray);
-        float lastRecordKeyValue = byteToFloat(lastRecord.fgPctHomeBitArray);
+        float firstRecordKeyValue = byteToFloat(firstRecord.fgPctHomeByteArray);
+        float lastRecordKeyValue = byteToFloat(lastRecord.fgPctHomeByteArray);
 
         // Check if the target keyValue is within the Current Block
         if (keyValue > firstRecordKeyValue && keyValue > lastRecordKeyValue) {
@@ -139,7 +139,7 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
             int numRecords = currBlock->numRecords;
             for (int i{0}; i < numRecords; i += 1) {
                 Record currRecord = currBlock->records[i];
-                float currRecordKeyValue = byteToFloat(currRecord.fgPctHomeBitArray);
+                float currRecordKeyValue = byteToFloat(currRecord.fgPctHomeByteArray);
 
                 if (currRecordKeyValue == keyValue) {
                     // Found the First Occurrence of Target Record
@@ -157,7 +157,7 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
             for (int i{0}; i < numRecords; i += 1) {
                 // Retrieve the Record
                 Record currRecord = currBlock->records[i];
-                float currRecordKeyValue = byteToFloat(currRecord.fgPctHomeBitArray);
+                float currRecordKeyValue = byteToFloat(currRecord.fgPctHomeByteArray);
 
                 // Find the first record whose keyValue is larger
                 if (currRecordKeyValue > keyValue) {
@@ -182,7 +182,7 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
     Record smallestRecord = smallestDataBlock->records[0];
 
     // Evaluate if the target to be inserted is smaller
-    float smallestRecordKeyValue = byteToFloat(smallestRecord.fgPctHomeBitArray);
+    float smallestRecordKeyValue = byteToFloat(smallestRecord.fgPctHomeByteArray);
     // If it is a duplicate key, it will take the smallest
     if (keyValue <= smallestRecordKeyValue) {
         return std::make_pair(0, 0);
@@ -195,7 +195,7 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
     DataBlock *largestDataBlock = this->listBlocks[this->numDataBlocks - 1];
     Record largestRecord = largestDataBlock->records[largestDataBlock->numRecords - 1];
 
-    float largestRecordKeyValue = byteToFloat(largestRecord.fgPctHomeBitArray);
+    float largestRecordKeyValue = byteToFloat(largestRecord.fgPctHomeByteArray);
     // If it is a duplicate key, it will take the largest
     if (keyValue >= largestRecordKeyValue) {
         return std::make_pair((this->numDataBlocks - 1), (largestDataBlock->numRecords - 1));
