@@ -203,7 +203,7 @@ void BlockManager :: shiftRecordsDown(int blockIndex, int recordIndex, int nShif
     }
 
     int remainingSpace = MAX_RECORD_INDEX - this->listBlocks[blockIndex].numRecords;
-    int toShift;
+    int toShift = MAX_RECORD_INDEX - nShift;
 
     // *****TODO Need to account for the case when a new block must be created to account for the shift
     // Im assuming that creation of block is done before shifting, and that shifting will not cause data to go out of bounds
