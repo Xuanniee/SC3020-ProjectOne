@@ -1,3 +1,5 @@
+#ifndef BLOCK_MANAGER
+#define BLOCK_MANAGER
 // Import Libraries
 #include <stdio.h>
 #include <stdlib.h>
@@ -129,3 +131,4 @@ class BlockManager {
         */
         void insertRecord(Record rec);
 };
+#endif
