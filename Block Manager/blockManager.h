@@ -49,22 +49,8 @@ typedef struct record {
 typedef struct dataBlock {
     int numRecords;
     Record records[MAX_RECORDS];
-
-    // I don't think we can use hashmap since it is unordered
-    // struct hashmap {
-    //     float key;
-    //     Record *value;  // Pointer to the actual record
-    // } map[MAX_RECORDS];
-
 } DataBlock;
 
-// typedef struct blockManager {
-//     // Attributes
-//     int numDataBlocks = 0;
-//     int numRecords = 0;
-//     DataBlock *listBlocks[MAX_BLOCKS];     // Array of DataBlocks
-
-// } BlockManager;
 
 class BlockManager {
     private:
