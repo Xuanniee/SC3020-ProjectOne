@@ -6,17 +6,20 @@
 #include <iostream>
 #include "../Block Manager/blockManager.h"
 
+#define NUM_KEYS 39
+
 typedef struct node {
     // Given the size of the key and the size of a pointer, the number of keys/pointers should be 39
-    float keys[39];
+    float keys[NUM_KEYS];
 } Node;
 
 typedef struct leafNode: Node {
-    Record* records[39];
+    Record* records[NUM_KEYS];
+    leafNode* next;
 } LeafNode;
 
 typedef struct internalNode: Node {
-    Node* children[39];
+    Node* children[NUM_KEYS+1];
 } InternalNode;
 
 class BPlusTree {
@@ -68,7 +71,7 @@ class BPlusTree {
          * @param key 
          */
         void insertKey(float key);
-}
+};
 
 
 #endif
