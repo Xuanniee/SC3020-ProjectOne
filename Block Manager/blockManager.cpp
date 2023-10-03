@@ -16,26 +16,10 @@ float byteToFloat(unsigned char *recordKeyBitArray) {}
  * @return DataBlock* 
  */
 DataBlock* BlockManager :: createDataBlock() {
-    // Fix the Size of the Data Block to 400B
-    size_t dataBlockSize = 400;
-
-    // Malloc 400 Bytes of Space for the Data Block
-    DataBlock *newDataBlock = (DataBlock*) malloc(dataBlockSize);
-
-    // Verify Memory Allocation was successful
-    if (newDataBlock == NULL) {
-        std::cout << "Memory Allocation Failed." << std::endl;
-        exit(0);
-    }
-    else {
-        std::cout << "Memory Allocation Successful. One Data Block of 400B has been initialised." << std::endl;
-    }
-
-    // Add to the Block Manager's Array of Blocks, not Records since it should be handled by insertRecord
-    this->listBlocks[this->numDataBlocks] = newDataBlock;
+    // Since we dont need to allocate space, we can just simulate creation by incrementing numBlocks
     this->numDataBlocks++;
 
-    return newDataBlock;
+    return &(listBlocks[numDataBlocks-1]);
 }
 
 
@@ -46,13 +30,14 @@ DataBlock* BlockManager :: createDataBlock() {
  * @return int 
  */
 int BlockManager :: deleteDataBlock(DataBlock *blockToDelete) {
+    // Not sure if we still need this function, as we don't really delete blocks anymore
     // Retrieve the Data Block to be deleted
     int numDataBlocks = this->numDataBlocks;
     int deletedIndexBlock = -1;
 
     // Iterate until we find the position of the block to be deleted
     for (int i{0}; i < numDataBlocks; i++) {
-        DataBlock *currBlock = this->listBlocks[i];
+        DataBlock *currBlock = &(this->listBlocks[i]);
         if (currBlock == blockToDelete) {
             deletedIndexBlock = i;
             break;
@@ -63,26 +48,6 @@ int BlockManager :: deleteDataBlock(DataBlock *blockToDelete) {
         // Block not found
         return -1;
     }
-    else if (deletedIndexBlock == (numDataBlocks - 1)) {
-        // Last Block of Array
-        free(blockToDelete);
-        return 0;
-    }
-
-    // Free the Memory
-    free(blockToDelete);
-
-    // Shift the Remaining Blocks to replace the deleted block
-    int numBlocksToShift = numDataBlocks - deletedIndexBlock - 1;
-    while (numBlocksToShift > 0) {
-        // Replace the Block
-        this->listBlocks[deletedIndexBlock] = this->listBlocks[deletedIndexBlock + 1];
-        
-        // Update Counters
-        deletedIndexBlock++;
-        numBlocksToShift--;
-    }
-    
 
     // Update the Block Manager
     this->numDataBlocks--;
@@ -112,7 +77,7 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
     while (start <= end) {
         // Retrieve the Middle Data Block
         curr = start + (end - start) / 2;
-        DataBlock *currBlock = this->listBlocks[curr];
+        DataBlock *currBlock = &(this->listBlocks[curr]);
 
         // Retrieve the first and last records from the Middle (Current) Block
         Record firstRecord = currBlock->records[0];
@@ -178,7 +143,7 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
 
     // Case 3: Target Key is the largest or smallest in the database
     // Retrieve the Smallest Record
-    DataBlock *smallestDataBlock = this->listBlocks[0];
+    DataBlock *smallestDataBlock = &(this->listBlocks[0]);
     Record smallestRecord = smallestDataBlock->records[0];
 
     // Evaluate if the target to be inserted is smaller
@@ -192,7 +157,7 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
     }
 
     // Repeat for Largest Record
-    DataBlock *largestDataBlock = this->listBlocks[this->numDataBlocks - 1];
+    DataBlock *largestDataBlock = &(this->listBlocks[this->numDataBlocks - 1]);
     Record largestRecord = largestDataBlock->records[largestDataBlock->numRecords - 1];
 
     float largestRecordKeyValue = byteToFloat(largestRecord.fgPctHomeByteArray);
@@ -213,7 +178,7 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
 void BlockManager :: shiftRecordsDown(int blockIndex, int recordIndex, int nShift) {
 
     // To catch invalid input
-    if (nShift <= 0 || recordIndex < 0 || blockIndex < 0 || recordIndex > MAX_BLOCK_SIZE) {
+    if (nShift <= 0 || recordIndex < 0 || blockIndex < 0 || recordIndex > MAX_RECORD_INDEX) {
         return;
     }
 
@@ -237,7 +202,7 @@ void BlockManager :: shiftRecordsDown(int blockIndex, int recordIndex, int nShif
         exit(0);
     }
 
-    int remainingSpace = MAX_BLOCK_SIZE - this->listBlocks[blockIndex]->numRecords;
+    int remainingSpace = MAX_RECORD_INDEX - this->listBlocks[blockIndex].numRecords;
     int toShift;
 
     // *****TODO Need to account for the case when a new block must be created to account for the shift
@@ -247,89 +212,92 @@ void BlockManager :: shiftRecordsDown(int blockIndex, int recordIndex, int nShif
     while (remainingSpace < nShift) {
         /*
             The number of records that will be shifted and not pushed out of the current block. 
-            If the number of shifts is more than the number of records remaining after the recordIndex, toShift is just set to the MAX_BLOCK_SIZE-recordIndex.
+            If the number of shifts is more than the number of records remaining after the recordIndex, toShift is just set to the MAX_RECORD_INDEX-recordIndex.
             This is because toShift would become negative otherwise.
         */
-        toShift = MAX_BLOCK_SIZE - recordIndex - nShift <= 0 ? MAX_BLOCK_SIZE - recordIndex : MAX_BLOCK_SIZE - recordIndex - nShift;
+        toShift = MAX_RECORD_INDEX - recordIndex - nShift <= 0 ? 0 : MAX_RECORD_INDEX - recordIndex - nShift;
 
         // Store the records at the end of the block that will be pushed out by the shifting procedure in tempHoldingArea.
-        memcpy(tempHoldingArea, &(this->listBlocks[blockIndex]->records[MAX_BLOCK_SIZE-nShift]), sizeof(Record)*nShift);
+        memcpy(tempHoldingArea, &(this->listBlocks[blockIndex].records[MAX_RECORD_INDEX-nShift]), sizeof(Record)*nShift);
 
-        // Do the actual shifting of data within the block itself
-        memmove(&(this->listBlocks[blockIndex]->records[recordIndex + nShift]), &(this->listBlocks[blockIndex]->records[recordIndex]), sizeof(Record)*toShift);
-
+        if (toShift != 0) {
+            // Do the actual shifting of data within the block itself
+            memmove(&(this->listBlocks[blockIndex].records[recordIndex + nShift]), &(this->listBlocks[blockIndex].records[recordIndex]), sizeof(Record)*toShift);
+        }   
         // Write the mainHoldingArea to the front of the block
-        memcpy(&(this->listBlocks[blockIndex]->records[recordIndex]), mainHoldingArea, sizeof(Record)*nShift);
+        memcpy(&(this->listBlocks[blockIndex].records[recordIndex]), mainHoldingArea, sizeof(Record)*nShift);
 
         // Since we are moving to new blocks, having an recordIndex no longer makes sense after the first block.
         recordIndex = 0;
         blockIndex++;
-        remainingSpace = MAX_BLOCK_SIZE - this->listBlocks[blockIndex]->numRecords;
+        remainingSpace = MAX_RECORD_INDEX - this->listBlocks[blockIndex].numRecords;
 
         // Write the temp to the mainHoldingArea
         memcpy(mainHoldingArea, tempHoldingArea, sizeof(Record)*nShift);
     }
 
     // One final shift at the last block.
-    memmove(&(this->listBlocks[blockIndex]->records[recordIndex + nShift]), &(this->listBlocks[blockIndex]->records[recordIndex]), sizeof(Record)*toShift);
+    memmove(&(this->listBlocks[blockIndex].records[recordIndex + nShift]), &(this->listBlocks[blockIndex].records[recordIndex]), sizeof(Record)*toShift);
 
     // Write the main holding area to the front of the block
-    memcpy(&(this->listBlocks[blockIndex]->records[0]), mainHoldingArea, sizeof(Record)*nShift);
+    memcpy(&(this->listBlocks[blockIndex].records[0]), mainHoldingArea, sizeof(Record)*nShift);
 
     free(mainHoldingArea);
     free(tempHoldingArea);
 }
 
-void BlockManager :: shiftRecordsUp(int blockIndex, int recordIndex, int nShift) {
-    /*
-        Assuming that theres no overflow on the block at the top of the chain where the shift is meant to fill gaps,
-        and that recordIndex is the starting location of the gap in the original block.
+// *** We dont neded shiftRecordsUp ***
 
-        since shiftUp will only occur if theres a deletion, therefore nShift starting from the recordIndex+nShift within the block should
-        not overwrite any existing data.
+// void BlockManager :: shiftRecordsUp(int blockIndex, int recordIndex, int nShift) {
+//     /*
+//         Assuming that theres no overflow on the block at the top of the chain where the shift is meant to fill gaps,
+//         and that recordIndex is the starting location of the gap in the original block.
 
-        *****TO CONFIRM****
-    */
+//         since shiftUp will only occur if theres a deletion, therefore nShift starting from the recordIndex+nShift within the block should
+//         not overwrite any existing data.
 
-    // To catch invalid input
-    if (nShift <= 0 || recordIndex < 0 || blockIndex < 0 || recordIndex > MAX_BLOCK_SIZE || this->numDataBlocks - 1 < blockIndex) {
-        return;
-    }
+//         *****TO CONFIRM****
+//     */
 
-    Record* mainHoldingArea = (Record*)calloc(nShift, sizeof(Record));
-    Record* tempHoldingArea = (Record*)malloc(sizeof(Record)*nShift);
+//     // To catch invalid input
+//     if (nShift <= 0 || recordIndex < 0 || blockIndex < 0 || recordIndex > MAX_RECORD_INDEX || this->numDataBlocks - 1 < blockIndex) {
+//         return;
+//     }
 
-    if (mainHoldingArea == NULL || tempHoldingArea == NULL) {
-        std::cout << "Unable to shift records" << std::endl;
-        exit(0);
-    }
+//     Record* mainHoldingArea = (Record*)calloc(nShift, sizeof(Record));
+//     Record* tempHoldingArea = (Record*)malloc(sizeof(Record)*nShift);
 
-    for (int i = this->numDataBlocks-1; i > blockIndex; i--) {
+//     if (mainHoldingArea == NULL || tempHoldingArea == NULL) {
+//         std::cout << "Unable to shift records" << std::endl;
+//         exit(0);
+//     }
+
+//     for (int i = this->numDataBlocks-1; i > blockIndex; i--) {
         
-        // Shift the front of the array to the tempHoldingArea before it's overwritten
-        memcpy(tempHoldingArea, &(this->listBlocks[i]->records[0]), sizeof(Record)*nShift);
+//         // Shift the front of the array to the tempHoldingArea before it's overwritten
+//         memcpy(tempHoldingArea, &(this->listBlocks[i]->records[0]), sizeof(Record)*nShift);
 
-        // Shift the data within the block
-        memmove(&(this->listBlocks[i]->records[0]), &(this->listBlocks[i]->records[nShift]), sizeof(Record)*(MAX_BLOCK_SIZE - nShift));
+//         // Shift the data within the block
+//         memmove(&(this->listBlocks[i]->records[0]), &(this->listBlocks[i]->records[nShift]), sizeof(Record)*(MAX_RECORD_INDEX - nShift));
 
-        // Write the mainHoldingArea to the end of the block
-        memcpy(&(this->listBlocks[i]->records[MAX_BLOCK_SIZE - nShift]), mainHoldingArea, sizeof(Record)*nShift);
+//         // Write the mainHoldingArea to the end of the block
+//         memcpy(&(this->listBlocks[i]->records[MAX_RECORD_INDEX - nShift]), mainHoldingArea, sizeof(Record)*nShift);
 
-        // Write the temp to the mainHoldingArea
-        memcpy(mainHoldingArea, tempHoldingArea, sizeof(Record)*nShift);
-    }
+//         // Write the temp to the mainHoldingArea
+//         memcpy(mainHoldingArea, tempHoldingArea, sizeof(Record)*nShift);
+//     }
 
-    // Number of records remaining at the end of the original block after the gap
-    int toShift = MAX_BLOCK_SIZE - recordIndex - nShift;
-    // Do the shifting in the main block that has gaps to fill
-    memmove(&(this->listBlocks[blockIndex]->records[recordIndex]), &(this->listBlocks[blockIndex]->records[recordIndex - nShift]), sizeof(Record)*toShift);
+//     // Number of records remaining at the end of the original block after the gap
+//     int toShift = MAX_RECORD_INDEX - recordIndex - nShift;
+//     // Do the shifting in the main block that has gaps to fill
+//     memmove(&(this->listBlocks[blockIndex]->records[recordIndex]), &(this->listBlocks[blockIndex]->records[recordIndex - nShift]), sizeof(Record)*toShift);
 
-    // Write the mainHoldingArea to the end of the block
-    memcpy(&(this->listBlocks[blockIndex]->records[MAX_BLOCK_SIZE - nShift]), mainHoldingArea, sizeof(Record)*nShift);
+//     // Write the mainHoldingArea to the end of the block
+//     memcpy(&(this->listBlocks[blockIndex]->records[MAX_RECORD_INDEX - nShift]), mainHoldingArea, sizeof(Record)*nShift);
 
-    free(mainHoldingArea);
-    free(tempHoldingArea);
-}
+//     free(mainHoldingArea);
+//     free(tempHoldingArea);
+// }
 
 
 void BlockManager :: insertRecord(Record rec) {
@@ -339,12 +307,12 @@ void BlockManager :: insertRecord(Record rec) {
     std::tie(ib, ir) = findRecord(pk);
 
     // create new data block if all blocks are full
-    if (listBlocks[numDataBlocks-1]->numRecords == MAX_RECORDS) createDataBlock(); 
+    if (listBlocks[numDataBlocks-1].numRecords == MAX_RECORDS) createDataBlock(); 
     
 
     ib += ir / MAX_RECORDS;
     ir %= MAX_RECORDS;
 
     shiftRecordsDown(ib, ir, 1);
-    listBlocks[ib]->records[ir] = rec;
+    listBlocks[ib].records[ir] = rec;
 }

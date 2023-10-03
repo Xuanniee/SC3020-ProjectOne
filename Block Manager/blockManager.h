@@ -6,8 +6,8 @@
 // Maximum number of Records in a Data Block {400B - 4B / 20B} should be 19 Blocks, because of block 
 // header storing the attribute
 #define MAX_RECORDS 19
-// Maximum number of Blocks (500MB / 400B)
-#define MAX_BLOCKS 1250000
+// Maximum number of Blocks = (approx 27k records/19 records per block)
+#define MAX_BLOCKS 1500
 
 /**
  * 20B in total for a single record
@@ -68,11 +68,11 @@ class BlockManager {
     private:
         int numDataBlocks = 0;
         int numRecords = 0;
-        DataBlock *listBlocks[MAX_BLOCKS];
-        int MAX_BLOCK_SIZE = 400;
+        DataBlock listBlocks[MAX_BLOCKS];
+        int MAX_RECORD_INDEX = MAX_RECORDS-1;
 
     public:
-        DataBlock** getListBlocks() {
+        DataBlock* getListBlocks() {
             return this->listBlocks;
         };
 
