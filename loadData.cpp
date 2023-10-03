@@ -9,83 +9,98 @@
 
 using namespace std;
 
-unsigned char* intToBytes(int num, int sizeByte){
-    unsigned char* bytes = new unsigned char[sizeByte]; //can use sizeof num?
-    for (int i=0; i<sizeByte; i++){
-        bytes[i] = (num >> ((sizeByte-1-i)*8)) & 0xFF;
-    }
+unsigned char intToBytes(int num){
+    unsigned char bytes; //for the 1 byte int 
+        bytes = (num >> 0) & 0xFF;
     return bytes;
 }
 
-unsigned char* floatToBytes(float num, size_t sizeByte = 2){
+unsigned char* floatToBytes(float num){
     //at most 3 s.f.
-    unsigned char* bytes = new unsigned char[sizeByte];
-    
+    int sizeOfBytes = 2;
+    unsigned char* bytes = new unsigned char[sizeOfBytes];
     // First bit indicates if 1 or 0. Remaining 7 bits are for decimal. (2B)
     if (num>=1){
         num = num-1;
         int val = num*1000 + pow(2, 15); // put the MSB as 1 if the before decimal is 1
-        for (int i=0; i<sizeByte; i++){
-            bytes[i] = (val >> ((sizeByte-1-i)*8)) & 0xFF;
+        for (int i=0; i<sizeOfBytes; i++){
+            bytes[i] = (val >> ((sizeOfBytes-1-i)*8)) & 0xFF;
         }
     }else{
         int val = num*1000;
-        for (int i=0; i<sizeByte; i++){
-            bytes[i] = (val >> ((sizeByte-1-i)*8)) & 0xFF;
+        for (int i=0; i<sizeOfBytes; i++){
+            bytes[i] = (val >> ((sizeOfBytes-1-i)*8)) & 0xFF;
         }
     }
     return bytes;
 }
 
-unsigned char* boolToBytes(bool num, size_t sizeByte = 1){
-    unsigned char* bytes = new unsigned char[sizeByte];
-    bytes[0] = num & 0xFF;
-    return bytes;
-}
+// unsigned char* boolToBytes(bool num, size_t sizeByte = 1){
+//     unsigned char* bytes = new unsigned char[sizeByte];
+//     bytes[0] = num & 0xFF;
+//     return bytes;
+// }
 
-unsigned char* dateToBytes(string date, int sizeByte = 10){
-    unsigned char* bytes = new unsigned char[sizeByte];
-    //convert to DD/MM/YYYY format
-    if (date.length() < 10){
-        if (date[1] == '/'){
-            date.insert(0, 1, '0');
-            }
-        if (date[4] == '/'){
-            date.insert(3, 1, '0');
-            }
-    }
-    for (int i=0; i<sizeByte; i++){
-        bytes[i] = static_cast<unsigned char>(date[i]);
-        // cout << bytes[i] <<endl;
-    }
-    return bytes;
+int dateToBytes(string date){
+    //NOT DONE!
+    // int sizeOfBytes = 4;
+    // unsigned char bytes[sizeOfBytes];
+    // //convert to DD/MM/YYYY format
+    // if (date.length() < 10){
+    //     if (date[1] == '/'){
+    //         date.insert(0, 1, '0');
+    //         }
+    //     if (date[4] == '/'){
+    //         date.insert(3, 1, '0');
+    //         }
+    // }
+    // int i=0;
+    
+    // // store DD into 1 byte, MM into 1 byte, YYYY into 2 bytes
+    // // for (int i=0; i<sizeOfBytes; i++){
+    // //     bytes[1];
+    // //     // cout << bytes[i] <<endl;
+    // // }
+    // return end;
+    return 0;
 }
  
 struct record{
-    short int recorderHeader;
-    unsigned char rebHome;
-
-    bool homeTeamWins;
     // Field Headers for the 9 Attributes
+    short int recorderHeader;
+    
+    //index 0
+    unsigned char rebHome; 
+
+    //index 1
+    bool homeTeamWins; 
+    
     // 3B is enough to represents all the dates we need but 4B for ease
+    // index 2
     int gameDateEst; 
 
     // Similar format to gameDateEst, so use same data size
+    //index 3
     int teamIdHome; 
 
     // Integer by nature of data
+    //index 4
     unsigned char ptsHome;
 
     // Primary Key; Float; Uses 2B
+    //index 5
     unsigned char fgPctHomeByteArray[2];
 
     // Same reason as above
+    //index 6
     unsigned char ftPctHomeByteArray[2];
 
     // Same reason as above
+    //index 7
     unsigned char fg3PctHomeByteArray[2];
 
     // Same as ptsHome
+    //index 8
     unsigned char astHome;
 
 
@@ -118,84 +133,92 @@ int main(){
     for (int i=1; i<recordArr.size(); i++){
         record r;
         int field = 0;
-        string missing;
+        short int missing = 0;
         
-        // r.date = dateToBytes(recordArr[i][0]); 
-        // cout<< r.date << endl;
+        r.gameDateEst = dateToBytes(recordArr[i][0]); 
+        cout<< r.gameDateEst << endl;
 
         
-        // r.teamID = intToBytes(stoi(recordArr[i][1]), 4);
-        // cout<< r.teamID << endl;
+        r.teamIdHome = stoi(recordArr[i][1]);
+        cout<< r.teamIdHome << endl;
        
-        // try{
-        //     r.PTS = intToBytes(stoi(recordArr[i][2]), 1);
-        // }catch(const exception& e){
-        //     r.PTS = intToBytes(0, 1);
-        //     missing.push_back('2');
-        // }
+        try{
+            // r.ptsHome = intToBytes(stoi(recordArr[i][2]));
+            r.ptsHome = static_cast<unsigned char>(stoi(recordArr[i][2]));
+        }catch(const exception& e){
+            r.ptsHome = static_cast<unsigned char>(0);
+            missing += pow(2,4); //the index 4 of the 9 bits will be 1
+        }
         
-        // try{
-        //     r.FG_PCT = floatToBytes(stof(recordArr[i][3]));
-        //     cout<< r.FG_PCT << endl;
-        // }catch(const exception& e)
-        // {
-        //     r.FG_PCT = floatToBytes(0.000);
-        //     missing.push_back('3');
+        try{
+            unsigned char* temp = floatToBytes(stof(recordArr[i][3]));
+            r.fgPctHomeByteArray[0] = temp[0];
+            r.fgPctHomeByteArray[1] = temp[1];
+            // cout<< r.fgPctHomeByteArray << endl;
+        }catch(const exception& e)
+        {
+            unsigned char* temp = floatToBytes(0.000);
+            r.fgPctHomeByteArray[0] = temp[0];
+            r.fgPctHomeByteArray[1] = temp[1];
+            missing += pow(2,5);
 
-        // }
+        }
 
-        // try{
-        //     r.FT_PCT = floatToBytes(stof(recordArr[i][4]));
-        //     cout<< r.FG_PCT << endl;
-        // }
-        // catch(const exception& e)
-        // {
-        //     r.FT_PCT = floatToBytes(0.000);
-        //     missing.push_back('4');
-        // }
+        try{
+            unsigned char* temp = floatToBytes(stof(recordArr[i][4]));
+            r.ftPctHomeByteArray[0] = temp[0];
+            r.ftPctHomeByteArray[1] = temp[1];
+            // cout<< r.ftPctHomeByteArray << endl;
+        }
+        catch(const exception& e)
+        {
+            unsigned char* temp = floatToBytes(0.000);
+            r.ftPctHomeByteArray[0] = temp[0];
+            r.ftPctHomeByteArray[1] = temp[1];
+            missing += pow(2,6);
+        }
         
-        // try{
-        //     r.FG3 = floatToBytes(stof(recordArr[i][5]));
-        //     cout<< r.FG3 << endl;
-        // }
-        // catch(const exception& e)
-        // {
-        //     r.FG3 = floatToBytes(0.000);
-        //     missing.push_back('5');
-        // }
+        try{
+            unsigned char* temp = floatToBytes(stof(recordArr[i][5]));
+            r.fg3PctHomeByteArray[0] = temp[0];
+            r.fg3PctHomeByteArray[1] = temp[1];
+            // cout<< r.fg3PctHomeByteArray << endl;
+        }
+        catch(const exception& e)
+        {
+            unsigned char* temp = floatToBytes(0.000);
+            r.fg3PctHomeByteArray[0] = temp[0];
+            r.fg3PctHomeByteArray[1] = temp[1];
+            missing += pow(2,7);
+        }
         
-        // try{
-        //     r.AST = intToBytes(stoi(recordArr[i][6]),1);
-        //     cout<< r.AST << endl;
-        // }
-        // catch(const exception& e)
-        // {
-        //     r.AST = intToBytes(0,1);
-        //     missing.push_back('6');
-        // }
+        try{
+            r.astHome = static_cast<unsigned char>(stoi(recordArr[i][6]));
+            cout<< r.astHome << endl;
+        }
+        catch(const exception& e)
+        {
+            r.astHome = static_cast<unsigned char>(0);
+            missing +=pow(2,8);
+        }
         
-        // try{
-        //     r.REB = intToBytes(stoi(recordArr[i][7]),1);
-        //     cout<< r.REB << endl;
-        // }
-        // catch(const exception& e)
-        // {
-        //     r.REB = intToBytes(0,1);
-        //     missing.push_back('7');
-        // }
+        try{
+            r.rebHome = static_cast<unsigned char>(stoi(recordArr[i][7]));
+            cout<< r.rebHome << endl;
+        }
+        catch(const exception& e)
+        {
+            r.rebHome = static_cast<unsigned char>(0);
+            missing += pow(2,0);
+        }
 
         
-        // bool temp = (bool)(stoi(recordArr[i][8]));
-        // r.win = boolToBytes(temp);
-        // cout<< temp << endl;
+        r.homeTeamWins= (bool)(stoi(recordArr[i][8]));
 
-        // r.header = new unsigned char[missing.length()];
-        // for (int j=0; j<missing.length(); j++){
-        //     r.header[j] = static_cast<unsigned char>(missing[j]);
-        // }
+        r.recorderHeader = missing;
         
-        // cout<<"Empty fields: "<<r.header<<endl;
-        cout<< "bytesize = "<< sizeof(int[2]) << endl;
+        cout<<"Empty fields: "<<r.recorderHeader<<endl;
+        cout<< "bytesize = "<< sizeof(r) << endl;
     
         // recordBytes.push_back(r);
         }
