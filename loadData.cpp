@@ -43,8 +43,7 @@ unsigned char* floatToBytes(float num){
 
 int dateToBytes(string date){
     //NOT DONE!
-    // int sizeOfBytes = 4;
-    // unsigned char bytes[sizeOfBytes];
+    
     // //convert to DD/MM/YYYY format
     // if (date.length() < 10){
     //     if (date[1] == '/'){
