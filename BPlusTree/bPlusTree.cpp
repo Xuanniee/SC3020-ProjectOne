@@ -400,7 +400,7 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
 
 // }
 
-void BPlusTree :: findRecordInTree(float key, std::stack<Node*> *stackPtr, Record **recordPtr) {
+bool BPlusTree :: findRecordInTree(float key, std::stack<Node*> *stackPtr, Record **recordPtr) {
     
     stackPtr->push(root);
     Node* next;
@@ -429,4 +429,6 @@ void BPlusTree :: findRecordInTree(float key, std::stack<Node*> *stackPtr, Recor
     }
 
     (found == true) && ((*recordPtr) = r);
+
+    return found;
 }

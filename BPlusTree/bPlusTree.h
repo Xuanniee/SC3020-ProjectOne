@@ -62,10 +62,12 @@ class BPlusTree {
          * @brief Search the tree for a record given the record key
          * If there are duplicate records, only the address of the first record with the key is returned
          * 
-         * @param key 
-         * @return void
+         * @param key -- search key
+         * @param stackPtr -- the pointer to the stack
+         * @param recordPtr -- pointer to the pointer to a record
+         * @return bool -- whether the record has been found
          */
-        void findRecordInTree(float key, std::stack<Node*> *stackPtr, Record **recordPtr);
+        bool findRecordInTree(float key, std::stack<Node*> *stackPtr, Record **recordPtr);
 
         /**
          * @brief rebalancing of index after a key is deleted from the database
