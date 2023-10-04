@@ -154,12 +154,13 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
         }
 
         // Update the New Leaf Node
+        int counter = 0;
         for (int i{numKeysToCopy}; i < numKeysInTarget; i += 1) {
-            // Copy the keys 1 by 1
-            newLeafNode->keys[i] = *(insertionKeysArray + i);
+            // New leaf should have no records, so start from 0
+            newLeafNode->keys[counter] = *(insertionKeysArray + i);
+            newLeafNode->records[counter] = *(insertionRecordsArray + i);
 
-            // Copy the record 1 by 1
-            newLeafNode->records[i] = *(insertionRecordsArray + i);
+            counter += 1;
         }
 
         // Update the number of keys inserted in the nodes
