@@ -5,6 +5,7 @@
 #include <sstream>
 #include <vector>
 #include <cmath> 
+#include <ctime>
 
 #define MAX_RECORDS 19
 #define MAX_BLOCKS 1250000
@@ -13,7 +14,7 @@
 unsigned char intToBytes(int num);
 unsigned char* floatToBytes(float num);
 int dateToBytes(string date);
-
+string bytesToDate(int days);
 
 
 struct record{

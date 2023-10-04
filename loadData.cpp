@@ -6,6 +6,7 @@
 #include <sstream>
 #include <vector>
 #include <cmath> 
+#include <ctime>
 
 using namespace std;
 
@@ -35,12 +36,6 @@ unsigned char* floatToBytes(float num){
     return bytes;
 }
 
-// unsigned char* boolToBytes(bool num, size_t sizeByte = 1){
-//     unsigned char* bytes = new unsigned char[sizeByte];
-//     bytes[0] = num & 0xFF;
-//     return bytes;
-// }
-
 short int dateToBytes(string date){
     tm t = {};
     istringstream ss(date);
@@ -54,7 +49,16 @@ short int dateToBytes(string date){
         cout << "Parse failed\n";
         return 0;
     }
-    
+}
+
+string bytesToDate(int days){
+    tm* time;
+    char new_date[11];
+
+    time_t date_seconds = static_cast<time_t>(days*86400);
+    time = gmtime(&date_seconds);
+    strftime(new_date, sizeof(new_date), "%d/%m/%Y", time);
+    return string(new_date);
 }
  
 struct record{
@@ -123,19 +127,18 @@ int main(){
     vector<record> recordBytes;
 
     // for (int i=1; i<recordArr.size(); i++){
-    for (int i=1; i<2; i++){
+    for (int i=1; i<20; i++){
         record r;
         int field = 0;
         short int missing = 0;
         
-        r.gameDateEst = dateToBytes(recordArr[i][0]); 
-        cout<< "date: " + recordArr[i][0] << endl;
-        cout<< r.gameDateEst << endl;
+        r.gameDateEst = dateToBytes(recordArr[i][0]); //correct
+        cout<< "date: " + recordArr[i][0] << " --> " << r.gameDateEst << endl;
 
         
         r.teamIdHome = stoi(recordArr[i][1]);
-        cout<< r.teamIdHome << endl;
-       
+        cout<< "ID: " << recordArr[i][1] << " --> " << r.teamIdHome << endl;
+    
         try{
             // r.ptsHome = intToBytes(stoi(recordArr[i][2]));
             r.ptsHome = static_cast<unsigned char>(stoi(recordArr[i][2]));
@@ -143,6 +146,7 @@ int main(){
             r.ptsHome = static_cast<unsigned char>(0);
             missing += pow(2,4); //the index 4 of the 9 bits will be 1
         }
+        cout<< "PTS: " << recordArr[i][2] << " --> " << r.ptsHome << endl;
         
         try{
             unsigned char* temp = floatToBytes(stof(recordArr[i][3]));
@@ -155,14 +159,13 @@ int main(){
             r.fgPctHomeByteArray[0] = temp[0];
             r.fgPctHomeByteArray[1] = temp[1];
             missing += pow(2,5);
-
         }
+        cout<< "FG: " << recordArr[i][3] << " --> " << r.fgPctHomeByteArray[0] << endl;
 
         try{
             unsigned char* temp = floatToBytes(stof(recordArr[i][4]));
             r.ftPctHomeByteArray[0] = temp[0];
             r.ftPctHomeByteArray[1] = temp[1];
-            // cout<< r.ftPctHomeByteArray << endl;
         }
         catch(const exception& e)
         {
@@ -171,6 +174,7 @@ int main(){
             r.ftPctHomeByteArray[1] = temp[1];
             missing += pow(2,6);
         }
+        cout<< "FT: " << recordArr[i][4] << " --> " << r.ftPctHomeByteArray[0] << endl;
         
         try{
             unsigned char* temp = floatToBytes(stof(recordArr[i][5]));
@@ -185,17 +189,18 @@ int main(){
             r.fg3PctHomeByteArray[1] = temp[1];
             missing += pow(2,7);
         }
+        cout<< "FG3: " << recordArr[i][5] << " --> " << r.fg3PctHomeByteArray[0] << endl;
         
         try{
             r.astHome = static_cast<unsigned char>(stoi(recordArr[i][6]));
-            cout<< r.astHome << endl;
         }
         catch(const exception& e)
         {
             r.astHome = static_cast<unsigned char>(0);
             missing +=pow(2,8);
         }
-        
+        cout<< "AST: " << recordArr[i][6] << " --> " << r.astHome << endl;
+
         try{
             r.rebHome = static_cast<unsigned char>(stoi(recordArr[i][7]));
             cout<< r.rebHome << endl;
@@ -205,9 +210,10 @@ int main(){
             r.rebHome = static_cast<unsigned char>(0);
             missing += pow(2,0);
         }
-
+        cout<< "REB: " << recordArr[i][7] << " --> " << r.rebHome << endl;
         
         r.homeTeamWins= (bool)(stoi(recordArr[i][8]));
+        cout<< "win: " << recordArr[i][8] << " --> " << r.homeTeamWins << endl;
 
         r.recorderHeader = missing;
         
