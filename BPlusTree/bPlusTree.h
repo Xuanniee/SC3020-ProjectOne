@@ -11,15 +11,24 @@
 typedef struct node {
     // Given the size of the key and the size of a pointer, the number of keys/pointers should be 39
     float keys[NUM_KEYS];
+    int numKeysInserted;
 } Node;
 
 typedef struct leafNode: Node {
     Record* records[NUM_KEYS];
+    int numRecordsInserted;
     leafNode* next;
+
+    // Added Parent Pointer so that I can reference the parent for insertion to update
+    internalNode* parent = NULL;
 } LeafNode;
 
 typedef struct internalNode: Node {
     Node* children[NUM_KEYS+1];
+    int numChildrenNodes;
+
+    // Added Parent Pointer so that I can reference the parent for insertion to update
+    struct internalNode* parent = NULL;
 } InternalNode;
 
 class BPlusTree {
@@ -56,7 +65,7 @@ class BPlusTree {
          * @param key 
          * @return Record* 
          */
-        Record* findRecordInTree(float key);
+        std::pair<bool, LeafNode*> findRecordInTree(float key);
 
         /**
          * @brief rebalancing of index after a key is deleted from the database
@@ -70,7 +79,7 @@ class BPlusTree {
          * 
          * @param key 
          */
-        void insertKey(float key);
+        int insertKeyInTree(float key, Record* targetRecord);
 };
 
 
