@@ -41,27 +41,20 @@ unsigned char* floatToBytes(float num){
 //     return bytes;
 // }
 
-int dateToBytes(string date){
-    //NOT DONE!
+short int dateToBytes(string date){
+    tm t = {};
+    istringstream ss(date);
+    if (ss >> get_time(&t, "%d/%m/%Y"))
+    {
+        short int days = (mktime(&t))/86400;
+        return days;
+    }
+    else
+    {
+        cout << "Parse failed\n";
+        return 0;
+    }
     
-    // //convert to DD/MM/YYYY format
-    // if (date.length() < 10){
-    //     if (date[1] == '/'){
-    //         date.insert(0, 1, '0');
-    //         }
-    //     if (date[4] == '/'){
-    //         date.insert(3, 1, '0');
-    //         }
-    // }
-    // int i=0;
-    
-    // // store DD into 1 byte, MM into 1 byte, YYYY into 2 bytes
-    // // for (int i=0; i<sizeOfBytes; i++){
-    // //     bytes[1];
-    // //     // cout << bytes[i] <<endl;
-    // // }
-    // return end;
-    return 0;
 }
  
 struct record{
@@ -76,7 +69,7 @@ struct record{
     
     // 3B is enough to represents all the dates we need but 4B for ease
     // index 2
-    int gameDateEst; 
+    short int gameDateEst; 
 
     // Similar format to gameDateEst, so use same data size
     //index 3
@@ -129,12 +122,14 @@ int main(){
     //store in bytes format
     vector<record> recordBytes;
 
-    for (int i=1; i<recordArr.size(); i++){
+    // for (int i=1; i<recordArr.size(); i++){
+    for (int i=1; i<2; i++){
         record r;
         int field = 0;
         short int missing = 0;
         
         r.gameDateEst = dateToBytes(recordArr[i][0]); 
+        cout<< "date: " + recordArr[i][0] << endl;
         cout<< r.gameDateEst << endl;
 
         
