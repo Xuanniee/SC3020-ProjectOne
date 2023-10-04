@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <stack>
 #include "../Block Manager/blockManager.h"
 
 #define NUM_KEYS 39
@@ -14,22 +15,21 @@ typedef struct node {
     int numKeysInserted;
 } Node;
 
+typedef struct InternalNode: Node {
+    Node* children[NUM_KEYS+1];
+    int numChildrenNodes;
+
+    // Added Parent Pointer so that I can reference the parent for insertion to update
+    struct InternalNode* parent = NULL;
+} InternalNode;
 typedef struct leafNode: Node {
     Record* records[NUM_KEYS];
     int numRecordsInserted;
     leafNode* next;
 
     // Added Parent Pointer so that I can reference the parent for insertion to update
-    internalNode* parent = NULL;
+    InternalNode* parent = NULL;
 } LeafNode;
-
-typedef struct internalNode: Node {
-    Node* children[NUM_KEYS+1];
-    int numChildrenNodes;
-
-    // Added Parent Pointer so that I can reference the parent for insertion to update
-    struct internalNode* parent = NULL;
-} InternalNode;
 
 class BPlusTree {
     private:
@@ -63,9 +63,9 @@ class BPlusTree {
          * If there are duplicate records, only the address of the first record with the key is returned
          * 
          * @param key 
-         * @return Record* 
+         * @return void
          */
-        std::pair<bool, LeafNode*> findRecordInTree(float key);
+        void findRecordInTree(float key, std::stack<Node*> *stackPtr, Record **recordPtr);
 
         /**
          * @brief rebalancing of index after a key is deleted from the database

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <cmath>
+#include <stack>
 #include "bPlusTree.h"
 
 /**
@@ -398,3 +399,34 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
 //     }
 
 // }
+
+void BPlusTree :: findRecordInTree(float key, std::stack<Node*> *stackPtr, Record **recordPtr) {
+    
+    stackPtr->push(root);
+    Node* next;
+    Record* r = NULL;
+    bool found = false;
+
+    for (int i = 0; i < height-1; i++) {
+        for (int j = 0; j < stackPtr->top()->numKeysInserted; j++) {
+            if (stackPtr->top()->keys[j] >= key) {
+                next = ((InternalNode*) stackPtr->top())->children[j];
+                break;
+            }
+        }
+        // If next hasn't been assigned, means it refers to the last node pointer
+        (next == NULL) && (next = ((InternalNode*) stackPtr->top())->children[stackPtr->top()->numKeysInserted]);
+        stackPtr->push(next);
+        next = NULL;
+    }
+
+    for (int j = 0; j < stackPtr->top()->numKeysInserted; j++) {
+        if (stackPtr->top()->keys[j] == key) {
+            r = ((LeafNode*) stackPtr->top())->records[j];
+            found = true;
+            break;
+        }
+    }
+
+    (found == true) && ((*recordPtr) = r);
+}
