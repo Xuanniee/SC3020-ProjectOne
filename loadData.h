@@ -11,21 +11,19 @@
 #include <ctime>
 
 #define RECORD_SIZE 20
-#define MAX_RECORDS 19
-#define MAX_BLOCKS 1250000
 #define NUM_FIELDS 9
 
 //conversion helper functions
-static unsigned char homeToBytes(int num);
-static int bytesToHome(unsigned char num);
-static unsigned short int floatToBytes(float num);
-static float bytesToFloat(unsigned short int num);
-static short int dateToBytes(std::string date);
-static std::string bytesToDate(int days);
+unsigned char homeToBytes(int num);
+int bytesToHome(unsigned char num);
+unsigned short int floatToBytes(float num);
+float bytesToFloat(unsigned short int num);
+short int dateToBytes(std::string date);
+std::string bytesToDate(int days);
 
 
 //record structure
-struct record{
+typedef struct record{
     
     //9 bits for all 9 fields (0-9)
     short int recorderHeader;
@@ -56,9 +54,9 @@ struct record{
 
     //index 8: range is within 1byte
     bool homeTeamWins;
-};
+} Record;
 
-std::vector<record> loadData();
+std::vector<Record> loadData();
 
 int main();
 

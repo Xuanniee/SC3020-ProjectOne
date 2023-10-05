@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include "../loadData.h"
+#include <tuple>
 
 // Maximum number of Records in a Data Block {400B - 4B / 20B} should be 19 Blocks, because of block 
 // header storing the attribute
@@ -14,36 +16,40 @@
 /**
  * 20B in total for a single record
  * assuming boolean is 1B
- */
-typedef struct record {
-    // Record Header is a bit array of 9 bits to correspond to each of the columns
-    short int recorderHeader;
+//  */
 
-    // Field Headers for the 9 Attributes
-    // First 2 attributes placed on top to reduct padding size
-    bool homeTeamWins;
+// typedef struct record{
+    
+//     //9 bits for all 9 fields (0-9)
+//     short int recorderHeader;
 
-    // 3B is enough to represents all the dates we need but 4B for ease
-    int gameDateEst; 
+//     //index 0 : number of days since epoch
+//     short int gameDateEst;
 
-    // Similar format to gameDateEst, so use same data size
-    int teamIdHome; 
+//     //index 1: range is within 4bytes 
+//     int teamIdHome;
 
-    // Integer by nature of data
-    unsigned char ptsHome;
+//     // index 2: range is within 1byte
+//     unsigned char ptsHome;
 
-    // Primary Key; Float; Uses 2B
-    short int fgPctHomeByteArray;
+//     //index 3: 3 decimals(0 to 999) + MSB of 1/0
+//     unsigned short int fgPctHomeByteArray;
 
-    // Same reason as above
-    short int ftPctHomeByteArray;
+//     //index 4: 3 decimals(0 to 999) + MSB of 1/0
+//     unsigned short int ftPctHomeByteArray;
 
-    // Same reason as above
-    short int fg3PctHomeByteArray;
+//     //index 5: 3 decimals(0 to 999) + MSB of 1/0
+//     unsigned short int fg3PctHomeByteArray;
 
-    // Same as ptsHome
-    unsigned char astHome;
-} Record;
+//     //index 6: range is within 1byte
+//     unsigned char astHome;
+
+//     //index 7: range is within 1byt
+//     unsigned char rebHome;
+
+//     //index 8: range is within 1byte
+//     bool homeTeamWins;
+// } Record;
 
 
 typedef struct dataBlock {
@@ -117,4 +123,8 @@ class BlockManager {
         */
         void insertRecord(Record rec);
 };
+
+int main();
+
 #endif
+

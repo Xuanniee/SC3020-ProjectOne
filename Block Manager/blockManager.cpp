@@ -2,14 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
-#include <blockManager.h>
+#include "blockManager.h"
+#include "../loadData.h"
+#include <tuple>
 
-/**
- * Helper Functions from the rest to prevent syntax errors
- */
-float byteToFloat(unsigned char *recordKeyBitArray) {}
-
-
+using namespace std;
 /**
  * @brief Create a Data Block object
  * 
@@ -36,7 +33,7 @@ int BlockManager :: deleteDataBlock(DataBlock *blockToDelete) {
     int deletedIndexBlock = -1;
 
     // Iterate until we find the position of the block to be deleted
-    for (int i{0}; i < numDataBlocks; i++) {
+    for (int i=0; i < numDataBlocks; i++) {
         DataBlock *currBlock = &(this->listBlocks[i]);
         if (currBlock == blockToDelete) {
             deletedIndexBlock = i;
@@ -84,8 +81,8 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
         Record lastRecord = currBlock->records[currBlock->numRecords - 1];
 
         // Parse the Key Values of Records to Float Values for Comparison
-        float firstRecordKeyValue = byteToFloat(firstRecord.fgPctHomeByteArray);
-        float lastRecordKeyValue = byteToFloat(lastRecord.fgPctHomeByteArray);
+        float firstRecordKeyValue = bytesToFloat(firstRecord.fgPctHomeByteArray);
+        float lastRecordKeyValue = bytesToFloat(lastRecord.fgPctHomeByteArray);
 
         // Check if the target keyValue is within the Current Block
         if (keyValue > firstRecordKeyValue && keyValue > lastRecordKeyValue) {
@@ -102,9 +99,9 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
 
             // Iterate over all the Records to check if target Record is present
             int numRecords = currBlock->numRecords;
-            for (int i{0}; i < numRecords; i += 1) {
+            for (int i=0; i < numRecords; i += 1) {
                 Record currRecord = currBlock->records[i];
-                float currRecordKeyValue = byteToFloat(currRecord.fgPctHomeByteArray);
+                float currRecordKeyValue = bytesToFloat(currRecord.fgPctHomeByteArray);
 
                 if (currRecordKeyValue == keyValue) {
                     // Found the First Occurrence of Target Record
@@ -119,10 +116,10 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
             int insertionIndex = 0;
 
             // Determine where to place the record to be inserted
-            for (int i{0}; i < numRecords; i += 1) {
+            for (int i=0; i < numRecords; i += 1) {
                 // Retrieve the Record
                 Record currRecord = currBlock->records[i];
-                float currRecordKeyValue = byteToFloat(currRecord.fgPctHomeByteArray);
+                float currRecordKeyValue = bytesToFloat(currRecord.fgPctHomeByteArray);
 
                 // Find the first record whose keyValue is larger
                 if (currRecordKeyValue > keyValue) {
@@ -147,7 +144,7 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
     Record smallestRecord = smallestDataBlock->records[0];
 
     // Evaluate if the target to be inserted is smaller
-    float smallestRecordKeyValue = byteToFloat(smallestRecord.fgPctHomeByteArray);
+    float smallestRecordKeyValue = bytesToFloat(smallestRecord.fgPctHomeByteArray);
     // If it is a duplicate key, it will take the smallest
     if (keyValue <= smallestRecordKeyValue) {
         return std::make_pair(0, 0);
@@ -160,7 +157,7 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
     DataBlock *largestDataBlock = &(this->listBlocks[this->numDataBlocks - 1]);
     Record largestRecord = largestDataBlock->records[largestDataBlock->numRecords - 1];
 
-    float largestRecordKeyValue = byteToFloat(largestRecord.fgPctHomeByteArray);
+    float largestRecordKeyValue = bytesToFloat(largestRecord.fgPctHomeByteArray);
     // If it is a duplicate key, it will take the largest
     if (keyValue >= largestRecordKeyValue) {
         return std::make_pair((this->numDataBlocks - 1), (largestDataBlock->numRecords));
@@ -302,7 +299,7 @@ void BlockManager :: shiftRecordsDown(int blockIndex, int recordIndex, int nShif
 
 void BlockManager :: insertRecord(Record rec) {
     int ib, ir;
-    float pk = byteToFloat(rec.fg3PctHomeByteArray);
+    float pk = bytesToFloat(rec.fg3PctHomeByteArray);
 
     std::tie(ib, ir) = findRecord(pk);
 
@@ -315,4 +312,17 @@ void BlockManager :: insertRecord(Record rec) {
 
     shiftRecordsDown(ib, ir, 1);
     listBlocks[ib].records[ir] = rec;
+}
+
+int main(){
+    vector<Record> recArr = loadData();
+    cout << recArr[0].teamIdHome << endl;
+    // BlockManager blkManager = BlockManager();
+    // for (Record rec : recArr){
+    //     blkManager.insertRecord(rec);
+    // }
+    
+    // std::cout << blkManager.getNumBlocks() << std::endl;
+
+
 }

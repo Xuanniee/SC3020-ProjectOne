@@ -9,23 +9,21 @@
 #include "loadData.h"
 
 #define RECORD_SIZE 20
-#define MAX_RECORDS 19
-#define MAX_BLOCKS 1250000
 #define NUM_FIELDS 9
 
 using namespace std;
 
-static unsigned char homeToBytes(int num){
+unsigned char homeToBytes(int num){
     unsigned char bytes = static_cast<unsigned char>(num);
     return bytes;
 }
 
-static int bytesToHome(unsigned char num){
+int bytesToHome(unsigned char num){
     int out = (int)num;
     return out;
 }
 
-static unsigned short int floatToBytes(float num){
+unsigned short int floatToBytes(float num){
     //at most 3 s.f. 
     unsigned short int bytes;
     // First bit indicates if 1 or 0. Remaining 7 bits are for decimal. (2B)
@@ -39,7 +37,7 @@ static unsigned short int floatToBytes(float num){
     return bytes;
 }
 
-static float bytesToFloat(unsigned short int num){
+float bytesToFloat(unsigned short int num){
     float out =0 ;
     if (num >=32768){
         num -= 32768;
@@ -49,7 +47,7 @@ static float bytesToFloat(unsigned short int num){
     return out;
 }
 
-static short int dateToBytes(string date){
+short int dateToBytes(string date){
     tm t = {};
     istringstream ss(date);
     if (ss >> get_time(&t, "%d/%m/%Y"))
@@ -64,7 +62,7 @@ static short int dateToBytes(string date){
     }
 }
 
-static string bytesToDate(int days){
+string bytesToDate(int days){
     tm* time;
     char new_date[11];
 
@@ -74,7 +72,7 @@ static string bytesToDate(int days){
     return string(new_date);
 }
 
-vector<record> loadData(){
+vector<Record> loadData(){
 
     string data;
     string field;
@@ -95,10 +93,10 @@ vector<record> loadData(){
     MyReadFile.close();
     
     //store in bytes format
-    vector<record> recordBytes;
+    vector<Record> recordBytes;
 
     for (int i=1; i<recordArr.size(); i++){
-        record r;
+        Record r;
         short int missing = 0;
         
         r.gameDateEst = dateToBytes(recordArr[i][0]); //correct
@@ -184,7 +182,7 @@ vector<record> loadData(){
 };
 
 int main(){
-    vector<record> recordBytes; 
+    vector<Record> recordBytes; 
     recordBytes = loadData();
     cout << recordBytes[0].teamIdHome << endl;
 }
