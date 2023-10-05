@@ -1,6 +1,5 @@
 #include <iostream>
 #include <fstream>
-// #include <cstring>
 #include <string>
 #include <stdio.h>
 #include <sstream>
@@ -8,35 +7,48 @@
 #include <cmath> 
 #include <ctime>
 
+#define RECORD_SIZE 20
+#define MAX_RECORDS 19
+#define MAX_BLOCKS 1250000
+#define NUM_FIELDS 9
+
 using namespace std;
 
-unsigned char intToBytes(int num){
-    unsigned char bytes; //for the 1 byte int 
-        bytes = (num >> 0) & 0xFF;
+static unsigned char homeToBytes(int num){
+    unsigned char bytes = static_cast<unsigned char>(num);
     return bytes;
 }
 
-unsigned char* floatToBytes(float num){
-    //at most 3 s.f.
-    int sizeOfBytes = 2;
-    unsigned char* bytes = new unsigned char[sizeOfBytes];
+static int bytesToHome(unsigned char num){
+    int out = (int)num;
+    return out;
+}
+
+static unsigned short int floatToBytes(float num){
+    //at most 3 s.f. 
+    unsigned short int bytes;
     // First bit indicates if 1 or 0. Remaining 7 bits are for decimal. (2B)
     if (num>=1){
         num = num-1;
-        int val = num*1000 + pow(2, 15); // put the MSB as 1 if the before decimal is 1
-        for (int i=0; i<sizeOfBytes; i++){
-            bytes[i] = (val >> ((sizeOfBytes-1-i)*8)) & 0xFF;
-        }
+        num = num*1000 + pow(2, 15); // put the MSB as 1 if the before decimal is 1
     }else{
-        int val = num*1000;
-        for (int i=0; i<sizeOfBytes; i++){
-            bytes[i] = (val >> ((sizeOfBytes-1-i)*8)) & 0xFF;
-        }
+        num = num*1000;
     }
+    bytes = static_cast<unsigned short int>(num);
     return bytes;
 }
 
-short int dateToBytes(string date){
+static float bytesToFloat(unsigned short int num){
+    float out =0 ;
+    if (num >=32768){
+        num -= 32768;
+        out += 1;
+    }
+    out = out + static_cast<float>(num)/1000;
+    return out;
+}
+
+static short int dateToBytes(string date){
     tm t = {};
     istringstream ss(date);
     if (ss >> get_time(&t, "%d/%m/%Y"))
@@ -51,7 +63,7 @@ short int dateToBytes(string date){
     }
 }
 
-string bytesToDate(int days){
+static string bytesToDate(int days){
     tm* time;
     char new_date[11];
 
@@ -62,53 +74,45 @@ string bytesToDate(int days){
 }
  
 struct record{
-    // Field Headers for the 9 Attributes
+    
+    //9 bits for all 9 fields (0-9)
     short int recorderHeader;
-    
-    //index 0
-    unsigned char rebHome; 
 
-    //index 1
-    bool homeTeamWins; 
-    
-    // 3B is enough to represents all the dates we need but 4B for ease
-    // index 2
-    short int gameDateEst; 
+    //index 0 : number of days since epoch
+    short int gameDateEst;
 
-    // Similar format to gameDateEst, so use same data size
-    //index 3
-    int teamIdHome; 
+    //index 1: range is within 4bytes 
+    int teamIdHome;
 
-    // Integer by nature of data
-    //index 4
+    // index 2: range is within 1byte
     unsigned char ptsHome;
 
-    // Primary Key; Float; Uses 2B
-    //index 5
-    unsigned char fgPctHomeByteArray[2];
+    //index 3: 3 decimals(0 to 999) + MSB of 1/0
+    unsigned short int fgPctHomeByteArray;
 
-    // Same reason as above
-    //index 6
-    unsigned char ftPctHomeByteArray[2];
+    //index 4: 3 decimals(0 to 999) + MSB of 1/0
+    unsigned short int ftPctHomeByteArray;
 
-    // Same reason as above
-    //index 7
-    unsigned char fg3PctHomeByteArray[2];
+    //index 5: 3 decimals(0 to 999) + MSB of 1/0
+    unsigned short int fg3PctHomeByteArray;
 
-    // Same as ptsHome
-    //index 8
+    //index 6: range is within 1byte
     unsigned char astHome;
 
+    //index 7: range is within 1byt
+    unsigned char rebHome;
 
+    //index 8: range is within 1byte
+    bool homeTeamWins;
 };
 
 
-int main(){
+vector<record> loadData(){
 
-    const int NUMFIELDS = 9;
-    vector<vector<string> > recordArr;
     string data;
     string field;
+    vector<vector<string> > recordArr;
+
 
     //read in file
     string textfile = "games.txt";
@@ -126,10 +130,8 @@ int main(){
     //store in bytes format
     vector<record> recordBytes;
 
-    // for (int i=1; i<recordArr.size(); i++){
-    for (int i=1; i<20; i++){
+    for (int i=1; i<recordArr.size(); i++){
         record r;
-        int field = 0;
         short int missing = 0;
         
         r.gameDateEst = dateToBytes(recordArr[i][0]); //correct
@@ -144,52 +146,38 @@ int main(){
             r.ptsHome = static_cast<unsigned char>(stoi(recordArr[i][2]));
         }catch(const exception& e){
             r.ptsHome = static_cast<unsigned char>(0);
-            missing += pow(2,4); //the index 4 of the 9 bits will be 1
+            missing += pow(2,2); //the index 4 of the 9 bits will be 1
         }
         cout<< "PTS: " << recordArr[i][2] << " --> " << r.ptsHome << endl;
         
         try{
-            unsigned char* temp = floatToBytes(stof(recordArr[i][3]));
-            r.fgPctHomeByteArray[0] = temp[0];
-            r.fgPctHomeByteArray[1] = temp[1];
-            // cout<< r.fgPctHomeByteArray << endl;
+            r.fgPctHomeByteArray = floatToBytes(stof(recordArr[i][3]));
         }catch(const exception& e)
         {
-            unsigned char* temp = floatToBytes(0.000);
-            r.fgPctHomeByteArray[0] = temp[0];
-            r.fgPctHomeByteArray[1] = temp[1];
-            missing += pow(2,5);
+            r.fgPctHomeByteArray = floatToBytes(0.000);
+            missing += pow(2,3);
         }
-        cout<< "FG: " << recordArr[i][3] << " --> " << r.fgPctHomeByteArray[0] << endl;
+        cout<< "FG: " << recordArr[i][3] << " --> " << r.fgPctHomeByteArray << endl;
 
         try{
-            unsigned char* temp = floatToBytes(stof(recordArr[i][4]));
-            r.ftPctHomeByteArray[0] = temp[0];
-            r.ftPctHomeByteArray[1] = temp[1];
+            r.ftPctHomeByteArray = floatToBytes(stof(recordArr[i][4]));
         }
         catch(const exception& e)
         {
-            unsigned char* temp = floatToBytes(0.000);
-            r.ftPctHomeByteArray[0] = temp[0];
-            r.ftPctHomeByteArray[1] = temp[1];
-            missing += pow(2,6);
+            r.ftPctHomeByteArray = floatToBytes(0.000);
+            missing += pow(2,4);
         }
-        cout<< "FT: " << recordArr[i][4] << " --> " << r.ftPctHomeByteArray[0] << endl;
+        cout<< "FT: " << recordArr[i][4] << " --> " << r.ftPctHomeByteArray << endl;
         
         try{
-            unsigned char* temp = floatToBytes(stof(recordArr[i][5]));
-            r.fg3PctHomeByteArray[0] = temp[0];
-            r.fg3PctHomeByteArray[1] = temp[1];
-            // cout<< r.fg3PctHomeByteArray << endl;
+            r.fg3PctHomeByteArray = floatToBytes(stof(recordArr[i][5]));
         }
         catch(const exception& e)
         {
-            unsigned char* temp = floatToBytes(0.000);
-            r.fg3PctHomeByteArray[0] = temp[0];
-            r.fg3PctHomeByteArray[1] = temp[1];
-            missing += pow(2,7);
+            r.fg3PctHomeByteArray = floatToBytes(0.000);
+            missing += pow(2,5);
         }
-        cout<< "FG3: " << recordArr[i][5] << " --> " << r.fg3PctHomeByteArray[0] << endl;
+        cout<< "FG3: " << recordArr[i][5] << " --> " << r.fg3PctHomeByteArray << endl;
         
         try{
             r.astHome = static_cast<unsigned char>(stoi(recordArr[i][6]));
@@ -197,34 +185,39 @@ int main(){
         catch(const exception& e)
         {
             r.astHome = static_cast<unsigned char>(0);
-            missing +=pow(2,8);
+            missing +=pow(2,6);
         }
         cout<< "AST: " << recordArr[i][6] << " --> " << r.astHome << endl;
+        // cout << bytesToHome(r.astHome) << endl;
 
         try{
             r.rebHome = static_cast<unsigned char>(stoi(recordArr[i][7]));
-            cout<< r.rebHome << endl;
         }
         catch(const exception& e)
         {
             r.rebHome = static_cast<unsigned char>(0);
-            missing += pow(2,0);
+            missing += pow(2,7);
         }
         cout<< "REB: " << recordArr[i][7] << " --> " << r.rebHome << endl;
+        // cout << bytesToHome(r.rebHome) << endl;
         
         r.homeTeamWins= (bool)(stoi(recordArr[i][8]));
-        cout<< "win: " << recordArr[i][8] << " --> " << r.homeTeamWins << endl;
+        cout<< "win: " << r.homeTeamWins << endl;
 
         r.recorderHeader = missing;
         
         cout<<"Empty fields: "<<r.recorderHeader<<endl;
         cout<< "bytesize = "<< sizeof(r) << endl;
+        cout << endl;
     
-        // recordBytes.push_back(r);
+        recordBytes.push_back(r);
+        
         }
-         
-
+    return recordBytes;
 };
 
-//check for the conversion 
-//have a reverse conversion
+int main(){
+    vector<record> recordBytes; 
+    recordBytes = loadData();
+    cout << recordBytes[0].teamIdHome << endl;
+}

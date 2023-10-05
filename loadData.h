@@ -7,49 +7,55 @@
 #include <cmath> 
 #include <ctime>
 
+#define RECORD_SIZE = 20
 #define MAX_RECORDS 19
 #define MAX_BLOCKS 1250000
 #define NUM_FIELDS 9
 
-unsigned char intToBytes(int num);
-unsigned char* floatToBytes(float num);
-int dateToBytes(string date);
-string bytesToDate(int days);
+//conversion helper functions
+static unsigned char homeToBytes(int num);
+static int bytesToHome(unsigned char num);
+static unsigned short int floatToBytes(float num);
+static float bytesToFloat(unsigned short int num);
+static short int dateToBytes(string date);
+static string bytesToDate(int days);
 
 
+//record structure
 struct record{
+    
+    //9 bits for all 9 fields (0-9)
     short int recorderHeader;
-    unsigned char rebHome;
 
-    bool homeTeamWins;
-    // Field Headers for the 9 Attributes
-    // 3B is enough to represents all the dates we need but 4B for ease
-    int gameDateEst; 
+    //index 0 : number of days since epoch
+    short int gameDateEst;
 
-    // Similar format to gameDateEst, so use same data size
-    int teamIdHome; 
+    //index 1: range is within 4bytes 
+    int teamIdHome;
 
-    // Integer by nature of data
+    // index 2: range is within 1byte
     unsigned char ptsHome;
 
-    // Primary Key; Float; Uses 2B
-    unsigned char fgPctHomeByteArray[2];
+    //index 3: 3 decimals(0 to 999) + MSB of 1/0
+    unsigned short int fgPctHomeByteArray;
 
-    // Same reason as above
-    unsigned char ftPctHomeByteArray[2];
+    //index 4: 3 decimals(0 to 999) + MSB of 1/0
+    unsigned short int ftPctHomeByteArray;
 
-    // Same reason as above
-    unsigned char fg3PctHomeByteArray[2];
+    //index 5: 3 decimals(0 to 999) + MSB of 1/0
+    unsigned short int fg3PctHomeByteArray;
 
-    // Same as ptsHome
+    //index 6: range is within 1byte
     unsigned char astHome;
 
+    //index 7: range is within 1byt
+    unsigned char rebHome;
+
+    //index 8: range is within 1byte
+    bool homeTeamWins;
 };
 
-struct dataBlock {
-    int numRecords;
-    record recordBytes[MAX_RECORDS];
-};
-
+vector<record> loadData();
 
 int main();
+
