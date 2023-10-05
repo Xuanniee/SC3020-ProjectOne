@@ -10,7 +10,6 @@
 #include <cmath> 
 #include <ctime>
 
-#define RECORD_SIZE 20
 #define NUM_FIELDS 9
 
 //conversion helper functions
