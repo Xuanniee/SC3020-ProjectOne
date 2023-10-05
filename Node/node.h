@@ -15,8 +15,7 @@ typedef struct InternalNode: Node {
     Node* children[NUM_KEYS+1];
     int numChildrenNodes;
 
-    // Added Parent Pointer so that I can reference the parent for insertion to update
-    struct InternalNode* parent = NULL;
+    // struct InternalNode* parent = NULL;
 
     /**
      * @brief Merge current node with a sibling internal node on the right
@@ -46,11 +45,10 @@ typedef struct InternalNode: Node {
 
 typedef struct LeafNode: Node {
     Record* records[NUM_KEYS];
-    int numRecordsInserted;
+    // int numRecordsInserted;
     LeafNode* next;
 
-    // Added Parent Pointer so that I can reference the parent for insertion to update
-    InternalNode* parent = NULL;
+    // InternalNode* parent = NULL;
 
     /**
      * @brief Merge current node with a sibling leaf node on the right

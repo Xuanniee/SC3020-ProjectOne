@@ -98,19 +98,28 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
     int heightTree = this->getHeight();
     Node *BPlusTreeRoot = this->getRoot();
 
+    // Prepare the Variables for the findRecordInTree() function
+    std::stack<Node*> myStack;
+    std::stack<Node*> *myStackPtr = &myStack;
+    // Will retrieve the actual record, but won't be relevant in this function
+    Record **recordPtr;
+
     // Search the Tree to see if the B+ tree contains the Record Key
-    std::pair<bool, LeafNode*> searchResult = findRecordInTree(key);
+    bool searchResult = findRecordInTree(key, myStackPtr, recordPtr);
 
     // Check if the Key Value exists in the B+ Tree
-    if (searchResult.first) {
+    if (searchResult) {
         // Record exists, do nothing
         return 0;
     }
 
+    // Retrieve the Target Leaf Node, i.e. the node where the target exist or where target is supposed to be inserted
+    LeafNode *targetLeafNode = (LeafNode*) myStackPtr->top();
+    myStackPtr->pop();
+    
     // If the key does not exists in tree, check if there is space
-    LeafNode *targetLeafNode = searchResult.second;
     int numKeysInTarget = targetLeafNode->numKeysInserted;
-    int numRecordsInTarget = targetLeafNode->numRecordsInserted;
+    // int numRecordsInTarget = targetLeafNode->numRecordsInserted;
 
     // Case 1 - Leaf Node has space to directly insert
     if (numKeysInTarget < NUM_KEYS) {
@@ -119,17 +128,17 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
 
         // Update the numkeys and numRecords
         targetLeafNode->numKeysInserted += 1;
-        targetLeafNode->numRecordsInserted += 1;
+        // targetLeafNode->numRecordsInserted += 1;
     }
 
     // Case 2 - Leaf Node is full, has (n+1) keys now. 
-    // Create a new node
+    // Create a new sibling leaf node
     LeafNode *newLeafNode = (LeafNode*) malloc(sizeof(LeafNode));
     newLeafNode->next = NULL;
 
     // Distribute the keys - MUST ALWAYS BE 40 else, sth is wrong
     if ((numKeysInTarget + 1) % 2 == 0) {
-        // Even number of keys. Create a New Array to store all the  (n + 1) keys
+        // Even number of keys. Create a New Array to store all the (n + 1) keys since the class array cannot store
         float combinedKeysArray[NUM_KEYS + 1];
         Record *combinedRecordsArray[NUM_KEYS + 1];
         for (int i{0}; i < numKeysInTarget; i += 1) {
@@ -137,15 +146,15 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
             combinedRecordsArray[i] = targetLeafNode->records[i];
         }
 
-        // Insert the n+1th key. Okay to pass by value since don't need the arrays afterwards
+        // Insert the n+1th key and sort all (n+1) keys. Okay to pass by value since don't need the arrays afterwards
         std::pair<float*, Record**> insertionResult = insertionSortInsertArray(key, targetRecord, numKeysInTarget, combinedKeysArray, combinedRecordsArray);
         float *insertionKeysArray = insertionResult.first;
         Record **insertionRecordsArray = insertionResult.second;
         
-        // Start copying from the index == numKeys/2
+        // Determine the index to start copying for the larger half for the newly created node
         int numKeysToCopy = numKeysInTarget / 2;
 
-        // Update the Old Leaf Node
+        // Update the Old Leaf Node, i.e. original leaf
         for (int i{0}; i < numKeysToCopy; i += 1) {
             // Copy the Keys over
             targetLeafNode->keys[i] = *(insertionKeysArray + i);
@@ -164,11 +173,11 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
             counter += 1;
         }
 
-        // Update the number of keys inserted in the nodes
+        // Update the number of keys inserted in the nodes, split evenly since 39 + 1 == 40
         targetLeafNode->numKeysInserted = numKeysToCopy;
-        targetLeafNode->numRecordsInserted = numKeysToCopy;
+        // targetLeafNode->numRecordsInserted = numKeysToCopy;
         newLeafNode->numKeysInserted = numKeysToCopy;
-        newLeafNode->numRecordsInserted = numKeysToCopy;
+        // newLeafNode->numRecordsInserted = numKeysToCopy;
 
         // Update the nextLeafNode Ptr, which might point to NULL
         LeafNode *nextLeafNode = targetLeafNode->next;
@@ -181,18 +190,28 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
         // Should remove the if clause. But I left it here so that I will rmb what happens and can explain
     }
 
-    // Update the Parent Node
-    InternalNode *parentNode = targetLeafNode->parent;
+    // Check if the Parent Node exists
+    InternalNode *parentNode; // = targetLeafNode->parent;
+    if (myStackPtr->empty()) {
+        // No Parent Node, is 1 level B+ Tree
+        parentNode = NULL;
+    }
+    else {
+        // Parent Exists, so must be Internal Node
+        parentNode = (InternalNode*) myStackPtr->top();
+        myStackPtr->pop();
+    }
 
+    // Boolean to determine if we are at Level 1.
     bool reachRoot = false;
     do {
-        // If Parent Does not exist, i.e. currently height is 1
+        // Case 2.1 - If Parent Does not exist, i.e. currently height is 1
         if (parentNode == NULL) {
             // Create a New Parent Node
             InternalNode *newParentNode = (InternalNode*) malloc(sizeof(InternalNode));
             newParentNode->numChildrenNodes = 2;
             newParentNode->numKeysInserted = 1;
-            newParentNode->parent = NULL;
+            // newParentNode->parent = NULL;
 
             // Update the TWO Children Nodes. Old is Smaller
             newParentNode->children[0] = targetLeafNode;
@@ -210,25 +229,27 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
             // End Method, Return 0 for no issues
             reachRoot = true;
         }
-        // Parent Node is not Full
+        // Case 2.2 - Parent Node is not Full
         else if (parentNode->numKeysInserted < NUM_KEYS) {
-            // Update the Parent Node Directly
-            InternalNode *existingParentNode = targetLeafNode->parent;
+            // Case 2.2.1 - Update the Parent Node Directly
+            // InternalNode *existingParentNode = targetLeafNode->parent;
             
-            // New Key to be inserted will be the largest value since parent keys are already sorted
+            // TBH Not very sure of this
+            // New Key to be inserted is the largest value since parent keys are already sorted
             float newKey = newLeafNode->keys[0];
+
             // Cannot update the numKeys until we insert the new key
-            existingParentNode->keys[existingParentNode->numKeysInserted] = newKey;
-            existingParentNode->children[existingParentNode->numChildrenNodes] = newLeafNode;
+            parentNode->keys[parentNode->numKeysInserted] = newKey;
+            parentNode->children[parentNode->numChildrenNodes] = newLeafNode;
 
             // Update the Number of Keys Inserted
-            existingParentNode->numKeysInserted += 1;
-            existingParentNode->numChildrenNodes += 1;
+            parentNode->numKeysInserted += 1;
+            parentNode->numChildrenNodes += 1;
 
-            // Don;t need update parent, end process
+            // Don't need update parent, end process
             reachRoot = true;
         }
-        // Parent Node is Full
+        // Case 2.3 - Parent Node is Full
         else if (parentNode->numKeysInserted >= NUM_KEYS) {
             /**
              * @brief The keys in the parent nodes are already sorted.
@@ -241,7 +262,7 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
             int numKeysRightParent;
 
             // Determine the Number of Keys each node should have
-            if ((parentNode->numKeysInserted+1) % 2 == 0) {
+            if ((parentNode->numKeysInserted + 1) % 2 == 0) {
                 // Even no. of nodes, so split equally
                 numKeysLeftParent = (parentNode->numKeysInserted + 1) / 2;
                 numKeysRightParent = (parentNode->numKeysInserted + 1) / 2;
@@ -252,41 +273,50 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
                 numKeysRightParent = std::floor((parentNode->numKeysInserted + 1) / 2);
             }
 
-            // Create a Sibling Node
-            InternalNode *newSiblingNode = (InternalNode*) malloc(sizeof(InternalNode));
+            // Create a Sibling Node to Parent, i.e. Uncle Node
+            InternalNode *newUncleNode = (InternalNode*) malloc(sizeof(InternalNode));
 
-            // Copy over the Keys and Children of original node to the sibling node
+            // Copy over the Keys and Children of original node to the uncle node
             int counter = 0;
             for (int i{numKeysLeftParent}; i < (parentNode->numKeysInserted); i += 1) {
                 // Sibling Node starts from 0, while Parent Node starts from Middle cos larger
-                newSiblingNode->keys[counter] = parentNode->keys[i];
-                newSiblingNode->children[counter] = parentNode->children[i];
+                newUncleNode->keys[counter] = parentNode->keys[i];
+                newUncleNode->children[counter] = parentNode->children[i];
 
                 counter += 1;
             }
             // Add the Last Key to the Rightmost Sibling Node {Smallest Key of New Leaf Node}
-            newSiblingNode->keys[counter] = newLeafNode->keys[0];
-            newSiblingNode->children[counter] = newLeafNode;
+            newUncleNode->keys[counter] = newLeafNode->keys[0];
+            newUncleNode->children[counter] = newLeafNode;
 
             // Have the Last Pointer point to NULL
-            newSiblingNode->children[NUM_KEYS-1] = NULL;
+            newUncleNode->children[NUM_KEYS - 1] = NULL;
 
-            // Update Attributes for Sibling Node
-            newSiblingNode->numChildrenNodes = numKeysRightParent;
-            newSiblingNode->numKeysInserted = numKeysRightParent;
+            // Update Attributes for Uncle Node (On the Right)
+            newUncleNode->numChildrenNodes = numKeysRightParent;
+            newUncleNode->numKeysInserted = numKeysRightParent;
 
-            // Update Attributes for Original parent Node
+            // Update Attributes for Original Parent Node (On the Left)
             parentNode->numChildrenNodes = numKeysLeftParent;
             parentNode->numKeysInserted = numKeysLeftParent;
 
             // Parent Node to Point to sibling Node
-            parentNode->children[NUM_KEYS-1] = newSiblingNode;
+            parentNode->children[NUM_KEYS - 1] = newUncleNode;
 
-            // Update for Grandparent Node Recursively
-            InternalNode *grandparentNode = parentNode->parent;
-            
+            // Update the Parent Node to be the Grandparent Node now
+            if (myStackPtr->empty()) {
+                // Sets up for Case 2.1
+                parentNode = NULL;
+            }
+            else {
+                // Grandparent must also be internal node
+                parentNode = (InternalNode*) myStackPtr->top();
+                myStackPtr->pop();
+            }
+            // parentNode = parentNode->parent;
             // Remember Parent is Smaller than its sibling
             // reachRoot still false
+            reachRoot = false;
         }
     } while (!reachRoot);
 
