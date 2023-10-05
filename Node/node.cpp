@@ -1,7 +1,7 @@
 #include "node.h"
 
 
-float InternalNode :: merge(InternalNode* right, InternalNode* parent) {
+void InternalNode :: merge(InternalNode* right, InternalNode* parent) {
     Node** _children = right->children;
     float* _keys = right->keys;
     
@@ -9,12 +9,10 @@ float InternalNode :: merge(InternalNode* right, InternalNode* parent) {
         keys[numKeysInserted+i] = _keys[i];
         children[numKeysInserted+i+1] = _children[i] ? _children[i] : _children[i+1];
     }
-
-    return keys[0];
 }    
 
 
-float LeafNode :: merge(LeafNode* right, InternalNode* parent) {
+void LeafNode :: merge(LeafNode* right, InternalNode* parent) {
     Record** _records = right->records;
     float* _keys = right->keys;
     
@@ -22,6 +20,4 @@ float LeafNode :: merge(LeafNode* right, InternalNode* parent) {
         keys[numKeysInserted+i] = _keys[i];
         records[numKeysInserted+i+1] = _records[i] ? _records[i] : _records[i+1];
     }
-
-    return keys[0];
 }

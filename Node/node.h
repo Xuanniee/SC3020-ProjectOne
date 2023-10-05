@@ -23,10 +23,8 @@ typedef struct InternalNode: Node {
      * 
      * @param right Sibling internal node on the right of this node
      * @param parent Parent internal node of this and the sibling
-     * 
-     * @return float -- First key of merged node
     */
-    float merge(InternalNode* right, InternalNode* parent);    
+    void merge(InternalNode* right, InternalNode* parent);    
 };
 
 
@@ -43,8 +41,6 @@ typedef struct LeafNode: Node {
      * 
      * @param right Sibling leaf node on the right of this node
      * @param parent Parent internal node of this and the sibling
-     * 
-     * @return float -- First key of merged node
     */
-    float merge(LeafNode* right, InternalNode* parent);
+    void merge(LeafNode* right, InternalNode* parent);
 };
