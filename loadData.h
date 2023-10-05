@@ -1,3 +1,6 @@
+#ifndef LOAD_DATA
+#define LOAD_DATA
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -7,7 +10,7 @@
 #include <cmath> 
 #include <ctime>
 
-#define RECORD_SIZE = 20
+#define RECORD_SIZE 20
 #define MAX_RECORDS 19
 #define MAX_BLOCKS 1250000
 #define NUM_FIELDS 9
@@ -17,8 +20,8 @@ static unsigned char homeToBytes(int num);
 static int bytesToHome(unsigned char num);
 static unsigned short int floatToBytes(float num);
 static float bytesToFloat(unsigned short int num);
-static short int dateToBytes(string date);
-static string bytesToDate(int days);
+static short int dateToBytes(std::string date);
+static std::string bytesToDate(int days);
 
 
 //record structure
@@ -55,7 +58,8 @@ struct record{
     bool homeTeamWins;
 };
 
-vector<record> loadData();
+std::vector<record> loadData();
 
 int main();
 
+#endif
