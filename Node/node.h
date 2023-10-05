@@ -40,7 +40,7 @@ typedef struct InternalNode: Node {
      * 
      * @param left Sibling internal node on the right of this node; 
     */
-    void borrowRight(InternalNode* right)
+    void borrowRight(InternalNode* right);
 };
 
 
@@ -74,5 +74,5 @@ typedef struct LeafNode: Node {
      * 
      * @param left Sibling leaf node on the right of this node; 
     */
-    void borrowRight(LeafNode* right)
+    void borrowRight(LeafNode* right);
 };
