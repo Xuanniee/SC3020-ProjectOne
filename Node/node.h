@@ -18,7 +18,15 @@ typedef struct InternalNode: Node {
     // Added Parent Pointer so that I can reference the parent for insertion to update
     struct InternalNode* parent = NULL;
 
-    void merge(InternalNode sibling, InternalNode parent);    
+    /**
+     * @brief Merge current node with a sibling internal node on the right
+     * 
+     * @param right Sibling internal node on the right of this node
+     * @param parent Parent internal node of this and the sibling
+     * 
+     * @return float -- First key of merged node
+    */
+    float merge(InternalNode* right, InternalNode* parent);    
 };
 
 
@@ -29,4 +37,14 @@ typedef struct LeafNode: Node {
 
     // Added Parent Pointer so that I can reference the parent for insertion to update
     InternalNode* parent = NULL;
+
+    /**
+     * @brief Merge current node with a sibling leaf node on the right
+     * 
+     * @param right Sibling leaf node on the right of this node
+     * @param parent Parent internal node of this and the sibling
+     * 
+     * @return float -- First key of merged node
+    */
+    float merge(LeafNode* right, InternalNode* parent);
 };
