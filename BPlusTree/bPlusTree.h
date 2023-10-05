@@ -6,30 +6,8 @@
 #include <iostream>
 #include <stack>
 #include "../Block Manager/blockManager.h"
+#include "../Node/node.h"
 
-#define NUM_KEYS 39
-
-typedef struct node {
-    // Given the size of the key and the size of a pointer, the number of keys/pointers should be 39
-    float keys[NUM_KEYS];
-    int numKeysInserted;
-} Node;
-
-typedef struct InternalNode: Node {
-    Node* children[NUM_KEYS+1];
-    int numChildrenNodes;
-
-    // Added Parent Pointer so that I can reference the parent for insertion to update
-    struct InternalNode* parent = NULL;
-} InternalNode;
-typedef struct leafNode: Node {
-    Record* records[NUM_KEYS];
-    int numRecordsInserted;
-    leafNode* next;
-
-    // Added Parent Pointer so that I can reference the parent for insertion to update
-    InternalNode* parent = NULL;
-} LeafNode;
 
 class BPlusTree {
     private:
