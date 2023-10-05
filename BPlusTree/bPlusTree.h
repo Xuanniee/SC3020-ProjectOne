@@ -36,6 +36,10 @@ class BPlusTree {
             return root;
         }
 
+        void setRoot(Node* node) {
+            root = node;
+        }
+
         /**
          * @brief Search the tree for a record given the record key
          * If there are duplicate records, only the address of the first record with the key is returned

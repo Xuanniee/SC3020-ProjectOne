@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <iostream>
 #include "../loadData.h"
+#include "../BPlusTree/bPlusTree.h"
+#include "../Node/node.h"
 #include <tuple>
 
 // Maximum number of Records in a Data Block {400B - 4B / 20B} should be 19 Blocks, because of block 
@@ -122,7 +124,13 @@ class BlockManager {
          * @param rec - record to be inserted
         */
         void insertRecord(Record rec);
-};
+
+        /**
+         * @brief Build a B+ Tree index on the stored records
+         * 
+         */
+        void buildIndex(BPlusTree* btree);
+};      
 
 int main();
 

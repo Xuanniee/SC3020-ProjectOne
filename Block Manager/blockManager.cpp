@@ -4,6 +4,8 @@
 #include <iostream>
 #include "blockManager.h"
 #include "../loadData.h"
+#include "../BPlusTree/bPlusTree.h"
+#include "../Node/node.h"
 #include <tuple>
 
 using namespace std;
@@ -312,6 +314,18 @@ void BlockManager :: insertRecord(Record rec) {
 
     shiftRecordsDown(ib, ir, 1);
     listBlocks[ib].records[ir] = rec;
+}
+
+void BlockManager :: buildIndex(BPlusTree* btree) {
+    if (btree->getRoot() == NULL) {
+        btree->setRoot((Node*)malloc(sizeof(Node)));
+    }
+
+    for (int i = 0; i < numDataBlocks; i++) {
+        for (int j = 0; j < listBlocks[i].numRecords; j++) {
+            btree->insertKeyInTree(bytesToFloat(listBlocks[i].records[j].fg3PctHomeByteArray), &listBlocks[i].records[j]);
+        }
+    }
 }
 
 int main(){
