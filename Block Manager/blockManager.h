@@ -33,13 +33,13 @@ typedef struct record {
     unsigned char ptsHome;
 
     // Primary Key; Float; Uses 2B
-    unsigned char fgPctHomeByteArray[2];
+    short int fgPctHomeByteArray;
 
     // Same reason as above
-    unsigned char ftPctHomeByteArray[2];
+    short int ftPctHomeByteArray;
 
     // Same reason as above
-    unsigned char fg3PctHomeByteArray[2];
+    short int fg3PctHomeByteArray;
 
     // Same as ptsHome
     unsigned char astHome;
