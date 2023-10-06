@@ -2,13 +2,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <tuple>
 #include "blockManager.h"
 #include "../loadData.h"
 #include "../BPlusTree/bPlusTree.h"
 #include "../Node/node.h"
-#include <tuple>
+
 
 using namespace std;
+
 /**
  * @brief Create a Data Block object
  * 
