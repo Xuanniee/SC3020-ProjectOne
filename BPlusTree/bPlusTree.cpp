@@ -214,7 +214,6 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
         if (parentNode == NULL) {
             // Create a New Parent Node
             InternalNode *newParentNode = (InternalNode*) malloc(sizeof(InternalNode));
-            newParentNode->numChildrenNodes = 2;
             newParentNode->numKeysInserted = 1;
             // newParentNode->parent = NULL;
 
@@ -245,11 +244,11 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
 
             // Cannot update the numKeys until we insert the new key
             parentNode->keys[parentNode->numKeysInserted] = newKey;
-            parentNode->children[parentNode->numChildrenNodes] = newLeafNode;
+            // Num Children Nodes is always numKeys + 1
+            parentNode->children[parentNode->numKeysInserted + 1] = newLeafNode;
 
             // Update the Number of Keys Inserted
             parentNode->numKeysInserted += 1;
-            parentNode->numChildrenNodes += 1;
 
             // Don't need update parent, end process
             reachRoot = true;
@@ -298,11 +297,9 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
             newUncleNode->children[NUM_KEYS - 1] = NULL;
 
             // Update Attributes for Uncle Node (On the Right)
-            newUncleNode->numChildrenNodes = numKeysRightParent;
             newUncleNode->numKeysInserted = numKeysRightParent;
 
             // Update Attributes for Original Parent Node (On the Left)
-            parentNode->numChildrenNodes = numKeysLeftParent;
             parentNode->numKeysInserted = numKeysLeftParent;
 
             // Parent Node to Point to sibling Node
@@ -619,6 +616,7 @@ void BPlusTree :: _updateUpstream(Node*, std::vector<std::pair<Node*, int> > st)
 void BPlusTree :: updateIndex(float deletedKey) {
 
     std::vector<std::pair<Node*, int> > st = _ancestry(deletedKey);
+    std::cout << "Deleting: " << deletedKey << std::endl;
 
     if (st.empty()) return;
 
@@ -695,7 +693,7 @@ void BPlusTree :: print() {
     float* keys;
     Node** children;
     Node* child;
-    int i, j;
+    int i;
 
     temp.push(root);
     curr.push(temp);
