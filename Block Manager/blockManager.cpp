@@ -65,7 +65,7 @@ int BlockManager ::deleteDataBlock(DataBlock *blockToDelete)
  * @param keyValue
  * @return Record*
  */
-std::pair<int,int> BlockManager :: findRecord(float keyValue) {
+std::pair<int,int> BlockManager :: findRecordBinarySearch(float keyValue) {
     // Initialise Index Variables
     int start = 0;
     int end = this->numDataBlocks - 1;
@@ -283,7 +283,7 @@ void BlockManager ::insertRecord(Record rec)
     int ib, ir;
     float pk = bytesToFloat(rec.fgPctHomeByteArray);
 
-    std::tie(ib, ir) = findRecord(pk);
+    std::tie(ib, ir) = findRecordBinarySearch(pk);
 
     // create new data block if all blocks are full
     if (numDataBlocks == 0 || listBlocks[numDataBlocks - 1].numRecords == MAX_RECORDS)
