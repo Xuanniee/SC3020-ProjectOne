@@ -9,8 +9,6 @@
 #include "loadData.h"
 #include "Block Manager/blockManager.h"
 
-#define NUM_FIELDS 9
-
 using namespace std;
 
 unsigned char homeToBytes(int num){
