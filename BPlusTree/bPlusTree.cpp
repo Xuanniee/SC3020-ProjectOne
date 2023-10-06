@@ -19,7 +19,7 @@ int insertionSortInsertLeafNode(float key, Record *targetRecord, int numKeysInTa
     Record *currRecord = targetRecord;
 
     // Iterate over the array to compare the values of the key
-    for (int i {0}; i < numKeysInTarget; i += 1) {
+    for (int i = 0; i < numKeysInTarget; i++) {
         // Current Key Value is Larger should be swapped.
         if (targetLeafNode->keys[i] > currKey) {
             // Swap the Keys First
@@ -62,7 +62,7 @@ std::pair<float*, Record**> insertionSortInsertArray(float key, Record *targetRe
     Record *currRecord = targetRecord;
 
     // Iterate over the array to compare the values of the key
-    for (int i {0}; i < numKeysInTarget; i += 1) {
+    for (int i = 0; i < numKeysInTarget; i++) {
         // Current Key Value is Larger should be swapped.
         if (combinedKeysArray[i] > currKey) {
             // Swap the Keys First
@@ -141,7 +141,7 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
         // Even number of keys. Create a New Array to store all the (n + 1) keys since the class array cannot store
         float combinedKeysArray[NUM_KEYS + 1];
         Record *combinedRecordsArray[NUM_KEYS + 1];
-        for (int i{0}; i < numKeysInTarget; i += 1) {
+        for (int i = 0; i < numKeysInTarget; i++) {
             combinedKeysArray[i] = targetLeafNode->keys[i];
             combinedRecordsArray[i] = targetLeafNode->records[i];
         }
@@ -155,7 +155,7 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
         int numKeysToCopy = numKeysInTarget / 2;
 
         // Update the Old Leaf Node, i.e. original leaf
-        for (int i{0}; i < numKeysToCopy; i += 1) {
+        for (int i = 0; i < numKeysToCopy; i++) {
             // Copy the Keys over
             targetLeafNode->keys[i] = *(insertionKeysArray + i);
 
@@ -165,7 +165,7 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
 
         // Update the New Leaf Node
         int counter = 0;
-        for (int i{numKeysToCopy}; i < numKeysInTarget; i += 1) {
+        for (int i = numKeysToCopy; i < numKeysInTarget; i++) {
             // New leaf should have no records, so start from 0
             newLeafNode->keys[counter] = *(insertionKeysArray + i);
             newLeafNode->records[counter] = *(insertionRecordsArray + i);
@@ -278,7 +278,7 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
 
             // Copy over the Keys and Children of original node to the uncle node
             int counter = 0;
-            for (int i{numKeysLeftParent}; i < (parentNode->numKeysInserted); i += 1) {
+            for (int i = numKeysLeftParent; i < (parentNode->numKeysInserted); i++) {
                 // Sibling Node starts from 0, while Parent Node starts from Middle cos larger
                 newUncleNode->keys[counter] = parentNode->keys[i];
                 newUncleNode->children[counter] = parentNode->children[i];

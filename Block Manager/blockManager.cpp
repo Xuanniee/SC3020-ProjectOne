@@ -3,9 +3,6 @@
 #include <stdlib.h>
 #include <iostream>
 #include "blockManager.h"
-#include "../loadData.h"
-#include "../BPlusTree/bPlusTree.h"
-#include "../Node/node.h"
 #include <tuple>
 
 using namespace std;
@@ -16,8 +13,8 @@ using namespace std;
  */
 DataBlock* BlockManager :: createDataBlock() {
     // Since we dont need to allocate space, we can just simulate creation by incrementing numBlocks
-    this->numDataBlocks++;
-
+    numDataBlocks++;
+    listBlocks[numDataBlocks-1].numRecords = 0;
     return &(listBlocks[numDataBlocks-1]);
 }
 
@@ -63,6 +60,9 @@ int BlockManager :: deleteDataBlock(DataBlock *blockToDelete) {
  * @return Record* 
  */
 std::pair<int,int> BlockManager :: findRecord(float keyValue) {
+    if (numRecords == 0) {
+        return std::make_pair(0,0);
+    }
     // Initialise Index Variables
     int start = 0;
     int end = this->numDataBlocks - 1;
@@ -76,7 +76,7 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
     while (start <= end) {
         // Retrieve the Middle Data Block
         curr = start + (end - start) / 2;
-        DataBlock *currBlock = &(this->listBlocks[curr]);
+        DataBlock *currBlock = &(listBlocks[curr]);
 
         // Retrieve the first and last records from the Middle (Current) Block
         Record firstRecord = currBlock->records[0];
@@ -95,7 +95,7 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
             // Curr Block is too Big, Search the Smaller half
             end = curr - 1;
         }
-        else if (keyValue > firstRecordKeyValue && keyValue < lastRecordKeyValue) {
+        else if (keyValue >= firstRecordKeyValue && keyValue <= lastRecordKeyValue) {
             // Found Target Block, record the index
             targetBlockIndex = curr;
 
@@ -136,6 +136,8 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
         }
         else {
             // Should not be possible if ordered
+            std::cout << keyValue << " " << firstRecordKeyValue << " " << lastRecord.fgPctHomeByteArray << std::endl;
+            std::cout << currBlock->numRecords << endl;
             std::cout << "Error!! Should not be in this loop if ordered sequentially within block." << std::endl;
         }
     }
@@ -245,68 +247,14 @@ void BlockManager :: shiftRecordsDown(int blockIndex, int recordIndex, int nShif
     free(tempHoldingArea);
 }
 
-// *** We dont neded shiftRecordsUp ***
-
-// void BlockManager :: shiftRecordsUp(int blockIndex, int recordIndex, int nShift) {
-//     /*
-//         Assuming that theres no overflow on the block at the top of the chain where the shift is meant to fill gaps,
-//         and that recordIndex is the starting location of the gap in the original block.
-
-//         since shiftUp will only occur if theres a deletion, therefore nShift starting from the recordIndex+nShift within the block should
-//         not overwrite any existing data.
-
-//         *****TO CONFIRM****
-//     */
-
-//     // To catch invalid input
-//     if (nShift <= 0 || recordIndex < 0 || blockIndex < 0 || recordIndex > MAX_RECORD_INDEX || this->numDataBlocks - 1 < blockIndex) {
-//         return;
-//     }
-
-//     Record* mainHoldingArea = (Record*)calloc(nShift, sizeof(Record));
-//     Record* tempHoldingArea = (Record*)malloc(sizeof(Record)*nShift);
-
-//     if (mainHoldingArea == NULL || tempHoldingArea == NULL) {
-//         std::cout << "Unable to shift records" << std::endl;
-//         exit(0);
-//     }
-
-//     for (int i = this->numDataBlocks-1; i > blockIndex; i--) {
-        
-//         // Shift the front of the array to the tempHoldingArea before it's overwritten
-//         memcpy(tempHoldingArea, &(this->listBlocks[i]->records[0]), sizeof(Record)*nShift);
-
-//         // Shift the data within the block
-//         memmove(&(this->listBlocks[i]->records[0]), &(this->listBlocks[i]->records[nShift]), sizeof(Record)*(MAX_RECORD_INDEX - nShift));
-
-//         // Write the mainHoldingArea to the end of the block
-//         memcpy(&(this->listBlocks[i]->records[MAX_RECORD_INDEX - nShift]), mainHoldingArea, sizeof(Record)*nShift);
-
-//         // Write the temp to the mainHoldingArea
-//         memcpy(mainHoldingArea, tempHoldingArea, sizeof(Record)*nShift);
-//     }
-
-//     // Number of records remaining at the end of the original block after the gap
-//     int toShift = MAX_RECORD_INDEX - recordIndex - nShift;
-//     // Do the shifting in the main block that has gaps to fill
-//     memmove(&(this->listBlocks[blockIndex]->records[recordIndex]), &(this->listBlocks[blockIndex]->records[recordIndex - nShift]), sizeof(Record)*toShift);
-
-//     // Write the mainHoldingArea to the end of the block
-//     memcpy(&(this->listBlocks[blockIndex]->records[MAX_RECORD_INDEX - nShift]), mainHoldingArea, sizeof(Record)*nShift);
-
-//     free(mainHoldingArea);
-//     free(tempHoldingArea);
-// }
-
-
 void BlockManager :: insertRecord(Record rec) {
     int ib, ir;
-    float pk = bytesToFloat(rec.fg3PctHomeByteArray);
+    float pk = bytesToFloat(rec.fgPctHomeByteArray);
 
     std::tie(ib, ir) = findRecord(pk);
 
     // create new data block if all blocks are full
-    if (listBlocks[numDataBlocks-1].numRecords == MAX_RECORDS) createDataBlock(); 
+    if (numDataBlocks == 0 || listBlocks[numDataBlocks-1].numRecords == MAX_RECORDS) createDataBlock(); 
     
 
     ib += ir / MAX_RECORDS;
@@ -314,6 +262,8 @@ void BlockManager :: insertRecord(Record rec) {
 
     shiftRecordsDown(ib, ir, 1);
     listBlocks[ib].records[ir] = rec;
+    numRecords++;
+    listBlocks[numDataBlocks-1].numRecords++;
 }
 
 void BlockManager :: buildIndex(BPlusTree* btree) {
@@ -323,20 +273,15 @@ void BlockManager :: buildIndex(BPlusTree* btree) {
 
     for (int i = 0; i < numDataBlocks; i++) {
         for (int j = 0; j < listBlocks[i].numRecords; j++) {
-            btree->insertKeyInTree(bytesToFloat(listBlocks[i].records[j].fg3PctHomeByteArray), &listBlocks[i].records[j]);
+            btree->insertKeyInTree(bytesToFloat(listBlocks[i].records[j].fgPctHomeByteArray), &listBlocks[i].records[j]);
         }
     }
 }
 
-int main(){
-    vector<Record> recArr = loadData();
-    cout << recArr[0].teamIdHome << endl;
-    // BlockManager blkManager = BlockManager();
-    // for (Record rec : recArr){
-    //     blkManager.insertRecord(rec);
-    // }
-    
-    // std::cout << blkManager.getNumBlocks() << std::endl;
-
-
+void BlockManager :: displayStats() {
+    cout << "=========Block Manager statistics=========" << endl;
+    cout << "Total number of records stored: " << numRecords << endl;
+    cout << "Size of each record: " << sizeof(Record) << endl;
+    cout << "Number of records stored in each block: " << MAX_RECORDS << endl;
+    cout << "Number of blocks for storing data: " << numDataBlocks << endl;
 }

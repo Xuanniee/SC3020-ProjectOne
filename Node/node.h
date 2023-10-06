@@ -1,14 +1,16 @@
-#include "../Block Manager/blockManager.h"
+#ifndef NODE
+#define NODE
+#include "../Record/record.h"
 
 
 #define NUM_KEYS 39
 
 
-typedef struct Node {
+typedef struct node {
     // Given the size of the key and the size of a pointer, the number of keys/pointers should be 39
     float keys[NUM_KEYS];
     int numKeysInserted;
-};
+} Node;
 
 
 typedef struct InternalNode: Node {
@@ -40,7 +42,7 @@ typedef struct InternalNode: Node {
      * @param left Sibling internal node on the right of this node; 
     */
     void borrowRight(InternalNode* right);
-};
+} InternalNode;
 
 
 typedef struct LeafNode: Node {
@@ -73,4 +75,6 @@ typedef struct LeafNode: Node {
      * @param left Sibling leaf node on the right of this node; 
     */
     void borrowRight(LeafNode* right);
-};
+} LeafNode;
+
+#endif
