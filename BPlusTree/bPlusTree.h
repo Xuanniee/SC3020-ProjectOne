@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <iostream>
 #include <stack>
+#include <vector>
+#include <tuple>
 #include "../Record/record.h"
 #include "../Node/node.h"
 
@@ -34,6 +36,17 @@ class BPlusTree {
          */
         Node* getRoot() {
             return root;
+        }
+
+        void setRoot(Node* node) {
+            root = node;
+        }
+
+        /**
+         * Mutator used for test_deletion. To be removed
+        */
+        void setHeight(int v) {
+            height = v;
         }
 
         /**

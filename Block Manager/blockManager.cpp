@@ -10,39 +10,43 @@ using namespace std;
 
 /**
  * @brief Create a Data Block object
- * 
- * @return DataBlock* 
+ *
+ * @return DataBlock*
  */
-DataBlock* BlockManager :: createDataBlock() {
+DataBlock *BlockManager ::createDataBlock()
+{
     // Since we dont need to allocate space, we can just simulate creation by incrementing numBlocks
     numDataBlocks++;
-    listBlocks[numDataBlocks-1].numRecords = 0;
-    return &(listBlocks[numDataBlocks-1]);
+    listBlocks[numDataBlocks - 1].numRecords = 0;
+    return &(listBlocks[numDataBlocks - 1]);
 }
-
 
 /**
  * @brief Indicates the Datablock to be deleted
- * 
- * @param blockToDelete 
- * @return int 
+ *
+ * @param blockToDelete
+ * @return int
  */
-int BlockManager :: deleteDataBlock(DataBlock *blockToDelete) {
+int BlockManager ::deleteDataBlock(DataBlock *blockToDelete)
+{
     // Not sure if we still need this function, as we don't really delete blocks anymore
     // Retrieve the Data Block to be deleted
     int numDataBlocks = this->numDataBlocks;
     int deletedIndexBlock = -1;
 
     // Iterate until we find the position of the block to be deleted
-    for (int i=0; i < numDataBlocks; i++) {
+    for (int i = 0; i < numDataBlocks; i++)
+    {
         DataBlock *currBlock = &(this->listBlocks[i]);
-        if (currBlock == blockToDelete) {
+        if (currBlock == blockToDelete)
+        {
             deletedIndexBlock = i;
             break;
         }
     }
 
-    if (deletedIndexBlock == -1) {
+    if (deletedIndexBlock == -1)
+    {
         // Block not found
         return -1;
     }
@@ -56,10 +60,10 @@ int BlockManager :: deleteDataBlock(DataBlock *blockToDelete) {
 
 /**
  * @brief Finding a record with a target key value from all the initialised Data Blocks
- * Returns 2 integers, which corresponds to block index and record index. For insertion, deletion or even when record is not found  
- * 
- * @param keyValue 
- * @return Record* 
+ * Returns 2 integers, which corresponds to block index and record index. For insertion, deletion or even when record is not found
+ *
+ * @param keyValue
+ * @return Record*
  */
 std::pair<int,int> BlockManager :: findRecord(float keyValue) {
     // Initialise Index Variables
@@ -72,12 +76,14 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
     int targetRecordIndex = -1;
 
     // Edge Case: 0 Records in Tree
-    if (this->getTotalRecords() == 0) {
-        return std::make_pair(0,0);
+    if (this->getTotalRecords() == 0)
+    {
+        return std::make_pair(0, 0);
     }
-    
+
     // Use Binary Search to determine the Index of the Block
-    while (start <= end) {
+    while (start <= end)
+    {
         // Retrieve the Middle Data Block
         curr = start + (end - start)/ 2;
         DataBlock *currBlock = &(listBlocks[curr]);
@@ -91,24 +97,29 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
         float lastRecordKeyValue = bytesToFloat(lastRecord.fgPctHomeByteArray);
 
         // Check if the target keyValue is within the Current Block
-        if (keyValue > firstRecordKeyValue && keyValue > lastRecordKeyValue) {
+        if (keyValue > firstRecordKeyValue && keyValue > lastRecordKeyValue)
+        {
             // Curr Block is too Small, Search the Bigger Half
             start = curr + 1;
         }
-        else if (keyValue < firstRecordKeyValue && keyValue < lastRecordKeyValue) {
+        else if (keyValue < firstRecordKeyValue && keyValue < lastRecordKeyValue)
+        {
             // Curr Block is too Big, Search the Smaller half
             end = curr - 1;
         }
-        else if (keyValue >= firstRecordKeyValue && keyValue <= lastRecordKeyValue) {
+        else if (keyValue >= firstRecordKeyValue && keyValue <= lastRecordKeyValue)
+        {
             // Found Target Block, record the index
             targetBlockIndex = curr;
             // Iterate over all the Records to check if target Record is present
             int numRecords = currBlock->numRecords;
-            for (int i=0; i < numRecords; i += 1) {
+            for (int i = 0; i < numRecords; i += 1)
+            {
                 Record currRecord = currBlock->records[i];
                 float currRecordKeyValue = bytesToFloat(currRecord.fgPctHomeByteArray);
 
-                if (currRecordKeyValue == keyValue) {
+                if (currRecordKeyValue == keyValue)
+                {
                     // Found the First Occurrence of Target Record
                     targetRecordIndex = i;
 
@@ -121,13 +132,15 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
             int insertionIndex = 0;
 
             // Determine where to place the record to be inserted
-            for (int i=0; i < numRecords; i += 1) {
+            for (int i = 0; i < numRecords; i += 1)
+            {
                 // Retrieve the Record
                 Record currRecord = currBlock->records[i];
                 float currRecordKeyValue = bytesToFloat(currRecord.fgPctHomeByteArray);
 
                 // Find the first record whose keyValue is larger
-                if (currRecordKeyValue > keyValue) {
+                if (currRecordKeyValue > keyValue)
+                {
                     targetRecordIndex = i;
 
                     // Case 2: Insertion Record's Index found
@@ -137,7 +150,8 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
 
             // Should not have a case where the target index is larger than all available indexes
         }
-        else {
+        else
+        {
             // Should not be possible if ordered
             std::cout << start << " " << end << endl;
             cout << currBlock->numRecords << endl;
@@ -156,10 +170,12 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
     // Evaluate if the target to be inserted is smaller
     float smallestRecordKeyValue = bytesToFloat(smallestRecord.fgPctHomeByteArray);
     // If it is a duplicate key, it will take the smallest
-    if (keyValue <= smallestRecordKeyValue) {
+    if (keyValue <= smallestRecordKeyValue)
+    {
         return std::make_pair(0, 0);
     }
-    else if (keyValue == smallestRecordKeyValue) {
+    else if (keyValue == smallestRecordKeyValue)
+    {
         std::cout << "Equals current smallest record" << std::endl;
     }
     
@@ -169,10 +185,12 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
 
     float largestRecordKeyValue = bytesToFloat(largestRecord.fgPctHomeByteArray);
     // If it is a duplicate key, it will take the largest
-    if (keyValue >= largestRecordKeyValue) {
+    if (keyValue >= largestRecordKeyValue)
+    {
         return std::make_pair((this->numDataBlocks - 1), (largestDataBlock->numRecords));
     }
-    else if (keyValue == largestRecordKeyValue) {
+    else if (keyValue == largestRecordKeyValue)
+    {
         std::cout << "Equals current largest record" << std::endl;
     }
 
@@ -186,11 +204,12 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
     return std::make_pair(-1, -1);
 }
 
-
-void BlockManager :: shiftRecordsDown(int blockIndex, int recordIndex, int nShift) {
+void BlockManager ::shiftRecordsDown(int blockIndex, int recordIndex, int nShift)
+{
 
     // To catch invalid input
-    if (nShift <= 0 || recordIndex < 0 || blockIndex < 0 || recordIndex > MAX_RECORD_INDEX) {
+    if (nShift <= 0 || recordIndex < 0 || blockIndex < 0 || recordIndex > MAX_RECORD_INDEX)
+    {
         return;
     }
 
@@ -200,16 +219,17 @@ void BlockManager :: shiftRecordsDown(int blockIndex, int recordIndex, int nShif
         The mainHoldingArea stores the data from previous blocks that is
         to be written to the front of the current block. I used calloc here so that
         the empty spaces created by the shift are filled with 0's.
-        
+
         The tempHoldingArea temporarily stores the data at the end of the current block
         as it is overwritten by the shifting procedure.
 
         The tempHoldingArea data is then transferred to the mainHoldingArea before moving to the next block.
     */
-    Record* mainHoldingArea = (Record*)calloc(nShift, sizeof(Record));
-    Record* tempHoldingArea = (Record*)malloc(sizeof(Record)*nShift);
+    Record *mainHoldingArea = (Record *)calloc(nShift, sizeof(Record));
+    Record *tempHoldingArea = (Record *)malloc(sizeof(Record) * nShift);
 
-    if (mainHoldingArea == NULL || tempHoldingArea == NULL) {
+    if (mainHoldingArea == NULL || tempHoldingArea == NULL)
+    {
         std::cout << "Unable to shift records" << std::endl;
         exit(0);
     }
@@ -221,9 +241,10 @@ void BlockManager :: shiftRecordsDown(int blockIndex, int recordIndex, int nShif
     // Im assuming that creation of block is done before shifting, and that shifting will not cause data to go out of bounds
 
     // While there is no empty space at the end of the block such that I can shift without overflow of records.
-    while (remainingSpace < nShift) {
+    while (remainingSpace < nShift)
+    {
         /*
-            The number of records that will be shifted and not pushed out of the current block. 
+            The number of records that will be shifted and not pushed out of the current block.
             If the number of shifts is more than the number of records remaining after the recordIndex, toShift is just set to the MAX_RECORD_INDEX-recordIndex.
             This is because toShift would become negative otherwise.
         */
@@ -232,7 +253,8 @@ void BlockManager :: shiftRecordsDown(int blockIndex, int recordIndex, int nShif
         // Store the records at the end of the block that will be pushed out by the shifting procedure in tempHoldingArea.
         memcpy(tempHoldingArea, &(listBlocks[blockIndex].records[MAX_RECORDS-nShift]), sizeof(Record)*nShift);
 
-        if (toShift != 0) {
+        if (toShift != 0)
+        {
             // Do the actual shifting of data within the block itself
             memmove(&(listBlocks[blockIndex].records[recordIndex + nShift]), &(listBlocks[blockIndex].records[recordIndex]), sizeof(Record)*toShift);
         }   
@@ -245,7 +267,7 @@ void BlockManager :: shiftRecordsDown(int blockIndex, int recordIndex, int nShif
         remainingSpace = MAX_RECORDS - listBlocks[blockIndex].numRecords;
 
         // Write the temp to the mainHoldingArea
-        memcpy(mainHoldingArea, tempHoldingArea, sizeof(Record)*nShift);
+        memcpy(mainHoldingArea, tempHoldingArea, sizeof(Record) * nShift);
     }
 
     toShift = MAX_RECORDS - nShift;
@@ -259,15 +281,16 @@ void BlockManager :: shiftRecordsDown(int blockIndex, int recordIndex, int nShif
     free(tempHoldingArea);
 }
 
-void BlockManager :: insertRecord(Record rec) {
+void BlockManager ::insertRecord(Record rec)
+{
     int ib, ir;
     float pk = bytesToFloat(rec.fgPctHomeByteArray);
 
     std::tie(ib, ir) = findRecord(pk);
 
     // create new data block if all blocks are full
-    if (numDataBlocks == 0 || listBlocks[numDataBlocks-1].numRecords == MAX_RECORDS) createDataBlock(); 
-    
+    if (numDataBlocks == 0 || listBlocks[numDataBlocks - 1].numRecords == MAX_RECORDS)
+        createDataBlock();
 
     ib += ir / MAX_RECORDS;
     ir %= MAX_RECORDS;
@@ -285,22 +308,74 @@ void BlockManager :: insertRecord(Record rec) {
     }
 }
 
-void BlockManager :: buildIndex(BPlusTree* btree) {
-    if (btree->getRoot() == NULL) {
-        btree->setRoot((Node*)malloc(sizeof(Node)));
+void BlockManager ::buildIndex(BPlusTree *btree)
+{
+    if (btree->getRoot() == NULL)
+    {
+        btree->setRoot((Node *)malloc(sizeof(Node)));
     }
 
-    for (int i = 0; i < numDataBlocks; i++) {
-        for (int j = 0; j < listBlocks[i].numRecords; j++) {
+    for (int i = 0; i < numDataBlocks; i++)
+    {
+        for (int j = 0; j < listBlocks[i].numRecords; j++)
+        {
             btree->insertKeyInTree(bytesToFloat(listBlocks[i].records[j].fgPctHomeByteArray), &listBlocks[i].records[j]);
         }
     }
 }
 
-void BlockManager :: displayStats() {
+void BlockManager ::displayStats()
+{
     cout << "=========Block Manager statistics=========" << endl;
     cout << "Total number of records stored: " << numRecords << endl;
     cout << "Size of each record: " << sizeof(Record) << endl;
     cout << "Number of records stored in each block: " << MAX_RECORDS << endl;
     cout << "Number of blocks for storing data: " << numDataBlocks << endl;
+}
+
+void BlockManager ::deleteRange(BPlusTree *btree, float low, float upp)
+{
+    Node *curr = btree->getRoot();
+    Record** recs;
+    vector<float> to_del;
+    LeafNode* leaf;
+    Record* rst;
+    Record* rend;
+    float *keys;
+    int i;
+
+    for (int _ = 1; _ < btree->getHeight(); _++) {
+        keys = curr->keys;
+        for (i = 0; i < curr->numKeysInserted; i++) {
+            if (keys[i] > low) break;
+        }
+        curr = ((InternalNode *)curr)->children[i];
+    }
+
+    // find st offset
+    leaf = (LeafNode*) curr;
+    keys = curr->keys;
+    for (i = 0; i < curr->numKeysInserted; i++) {
+        if (keys[i] >= low) break;
+    }
+
+    // acquire all keys to be deleted
+    while (leaf) {
+        keys = leaf->keys;
+        recs = leaf->records;
+
+        for (i=0; i<leaf->numKeysInserted; i++) {
+            if (keys[i] <=  upp) {
+                to_del.push_back(keys[i]);
+                recs[i] = nullptr; // mark as deleted to avoid shifting
+            }
+            else break;         
+        }
+        leaf = leaf->next;
+    }
+
+    // update index
+    for (float f : to_del) {
+        btree->updateIndex(f);
+    }
 }

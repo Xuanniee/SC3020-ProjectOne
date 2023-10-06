@@ -99,6 +99,15 @@ class BlockManager {
          * 
          */
         void displayStats();
+
+        /**
+         * @brief Delete range of keys
+         * 
+         * @param btree B+ Tree index
+         * @param low Lower key limit
+         * @param upp Upper key limit
+         */
+       void deleteRange(BPlusTree* btree, float low, float upp);
 };
 
 #endif

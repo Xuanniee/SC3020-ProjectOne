@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <cmath>
+#include <cstring>
 #include <stack>
 #include <queue>
 #include <vector>
@@ -481,7 +482,6 @@ std::vector<std::pair<Node*, int>> BPlusTree :: _ancestry(float key) {
         for (i=0; i<curr->numKeysInserted; i++) {
             if (keys[i] > key) break;
         }
-        std::cout << "_ancestry (i, keys[i], numKeys) " << i << " | "  << curr->keys[i] << " | " << curr->numKeysInserted << std::endl;
         res.push_back(std::make_pair(curr, i));
         curr = ((InternalNode*) curr)->children[i];
     }
@@ -490,7 +490,6 @@ std::vector<std::pair<Node*, int>> BPlusTree :: _ancestry(float key) {
     keys = curr->keys;
     for (i=0; i<curr->numKeysInserted; i++) {
         if (keys[i] == key) {
-            std::cout << "_ancestry (i, keys[i], numKeys) " << i << " | " << curr->keys[i] << " | " << curr->numKeysInserted << std::endl;
             res.push_back(std::make_pair(curr, i));
             return res;
         }
@@ -501,8 +500,6 @@ std::vector<std::pair<Node*, int>> BPlusTree :: _ancestry(float key) {
 
 void _shift(LeafNode* node, int src, int dir) {
     int n = (dir==1 ? node->numKeysInserted++ : node->numKeysInserted--) - src;
-    std::cout << "[_shift] src: " << src << ", dir: " << dir << ", n: " << n << std::endl;
-    std::cout << "[_shift] numKeysInserted: " << node->numKeysInserted << std::endl;
     if (!n || src+dir<0) return;
     std::memcpy(node->records+src+dir, node->records+src, n*sizeof(Record*));
     std::memcpy(node->keys+src+dir, node->keys+src, n*sizeof(float)); 
@@ -511,8 +508,6 @@ void _shift(LeafNode* node, int src, int dir) {
 
 void _shift(InternalNode* node, int src, int dir) {
     int n = (dir==1 ? node->numKeysInserted++ : node->numKeysInserted--) - src;
-    std::cout << "[_shift] src: " << src << ", dir: " << dir << ", n: " << n << std::endl;
-    std::cout << "[_shift] numKeysInserted: " << node->numKeysInserted << std::endl;
     if (n>=0) std::memcpy(node->children+src+dir, node->children+src, (n+1)*sizeof(Record*));
     if (n>0) std::memcpy(node->keys+src+dir, node->keys+src, n*sizeof(float)); 
 }
@@ -615,6 +610,7 @@ void BPlusTree :: _updateUpstream(Node*, std::vector<std::pair<Node*, int>> st) 
 void BPlusTree :: updateIndex(float deletedKey) {
 
     std::vector<std::pair<Node*, int>> st = _ancestry(deletedKey);
+    std::cout << "Deleting: " << deletedKey << std::endl;
 
     if (st.empty()) return;
 
@@ -623,7 +619,7 @@ void BPlusTree :: updateIndex(float deletedKey) {
     LeafNode* sibling;
     LeafNode* leaf;
     InternalNode* parent;
-    int offset, i_sibling;
+    int offset, i_sibling, i;
     
     std::tie(node, offset) = st.back();
     leaf = (LeafNode*) node;
@@ -634,11 +630,14 @@ void BPlusTree :: updateIndex(float deletedKey) {
     // ------------ CASE 1 ------------
     // Sufficient keys remaining
 
+    std::cout << "CASE 1" <<std::endl;
+    std::cout << leaf->numKeysInserted <<std::endl;
+    
     if (leaf->numKeysInserted >= MIN_LEAF_KEYS) return _updateFirstLeft(st, leaf->keys[0]);
-
+    
     // ------------ CASE 2 ------------
     // Borrow from sibling
-
+    std::cout << "CASE 2" <<std::endl;
     std::tie(temp, offset) = st.back();
 
     parent = (InternalNode*) temp;
@@ -666,7 +665,20 @@ void BPlusTree :: updateIndex(float deletedKey) {
 
     // ------------ CASE 3 ------------
     // Unable to borrow, hence need to delete itself & parent's ptr
+    // since we delete a leaf node, we need to update it's left leaf's pointer
+    std::cout << "CASE 3" <<std::endl;
+    for (i=st.size()-1; i>=0; i--) {
+        offset = st[i].second;
+        if (offset > 0) break; 
+    }
 
+    if (i > 0) {
+        temp = ((InternalNode*) st[i].first)->children[offset-1];
+        while (dynamic_cast<InternalNode*>(temp)) {
+            temp = ((InternalNode*) temp)->children[temp->numKeysInserted+1];
+        }
+        ((LeafNode*) temp)->next = leaf->next;
+    }
     _updateUpstream(parent, st);
 }
 
