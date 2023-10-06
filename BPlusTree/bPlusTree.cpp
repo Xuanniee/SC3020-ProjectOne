@@ -469,9 +469,9 @@ bool BPlusTree :: findRecordInTree(float key, std::stack<Node*> *stackPtr, Recor
 }
 
 
-std::vector<std::pair<Node*, int>> BPlusTree :: _ancestry(float key) {
+std::vector<std::pair<Node*, int> > BPlusTree :: _ancestry(float key) {
 
-    std::vector<std::pair<Node*, int>> res;
+    std::vector<std::pair<Node*, int> > res;
     Node* curr = root;
     int _, i;
     float *keys;
@@ -494,7 +494,7 @@ std::vector<std::pair<Node*, int>> BPlusTree :: _ancestry(float key) {
             return res;
         }
     }
-    return std::vector<std::pair<Node*, int>>();
+    return std::vector<std::pair<Node*, int> >();
 }
 
 
@@ -529,7 +529,7 @@ int _leafSibling(InternalNode* parent, int offset) {
 }
 
 
-void _updateFirstLeft( std::vector<std::pair<Node*, int>> st, float key) {
+void _updateFirstLeft( std::vector<std::pair<Node*, int> > st, float key) {
     // update first left parent's key
     for (int i=st.size()-1; i>=0; i--) {
         if (st[i].second > 0) {
@@ -540,7 +540,7 @@ void _updateFirstLeft( std::vector<std::pair<Node*, int>> st, float key) {
 }
 
 
-void BPlusTree :: _updateUpstream(Node*, std::vector<std::pair<Node*, int>> st) {
+void BPlusTree :: _updateUpstream(Node*, std::vector<std::pair<Node*, int> > st) {
     Node* temp;
     InternalNode* node;
     InternalNode* parent;
@@ -609,8 +609,7 @@ void BPlusTree :: _updateUpstream(Node*, std::vector<std::pair<Node*, int>> st) 
 
 void BPlusTree :: updateIndex(float deletedKey) {
 
-    std::vector<std::pair<Node*, int>> st = _ancestry(deletedKey);
-    std::cout << "Deleting: " << deletedKey << std::endl;
+    std::vector<std::pair<Node*, int> > st = _ancestry(deletedKey);
 
     if (st.empty()) return;
 
@@ -629,15 +628,11 @@ void BPlusTree :: updateIndex(float deletedKey) {
 
     // ------------ CASE 1 ------------
     // Sufficient keys remaining
-
-    std::cout << "CASE 1" <<std::endl;
-    std::cout << leaf->numKeysInserted <<std::endl;
     
     if (leaf->numKeysInserted >= MIN_LEAF_KEYS) return _updateFirstLeft(st, leaf->keys[0]);
     
     // ------------ CASE 2 ------------
     // Borrow from sibling
-    std::cout << "CASE 2" <<std::endl;
     std::tie(temp, offset) = st.back();
 
     parent = (InternalNode*) temp;
@@ -666,7 +661,7 @@ void BPlusTree :: updateIndex(float deletedKey) {
     // ------------ CASE 3 ------------
     // Unable to borrow, hence need to delete itself & parent's ptr
     // since we delete a leaf node, we need to update it's left leaf's pointer
-    std::cout << "CASE 3" <<std::endl;
+
     for (i=st.size()-1; i>=0; i--) {
         offset = st[i].second;
         if (offset > 0) break; 
@@ -684,8 +679,8 @@ void BPlusTree :: updateIndex(float deletedKey) {
 
 
 void BPlusTree :: print() {
-    std::queue<std::queue<Node*>> curr;
-    std::queue<std::queue<Node*>> next;
+    std::queue<std::queue<Node*> > curr;
+    std::queue<std::queue<Node*> > next;
     std::queue<Node*> temp;
     std::queue<Node*> temp2;
     float* keys;
@@ -723,7 +718,7 @@ void BPlusTree :: print() {
         }
         std::cout << std::endl;
         std::swap(curr, next);
-        next = std::queue<std::queue<Node*>>();
+        next = std::queue<std::queue<Node*> >();
     }
     while (!curr.empty()) {
         temp = curr.front();
