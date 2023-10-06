@@ -103,7 +103,7 @@ class BlockManager {
         void displayStats();
 
         /**
-         * @brief Delete range of keys
+         * @brief Delete range of keys, inclusive of both upper & lower limits
          * 
          * @param btree B+ Tree index
          * @param low Lower key limit
