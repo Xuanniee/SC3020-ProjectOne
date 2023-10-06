@@ -153,11 +153,6 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
         else
         {
             // Should not be possible if ordered
-            std::cout << start << " " << end << endl;
-            cout << currBlock->numRecords << endl;
-            for (int i = 0; i < numDataBlocks; i++) {
-                cout << i << " " << listBlocks[i].numRecords << endl;
-            }
             exit(-1);
         }
     }
@@ -195,12 +190,14 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
     }
 
     // Larger than the first block last record and block i +1 first record
-    if (keyValue >= listBlocks[start-1].records[listBlocks[start-1].numRecords-1].fgPctHomeByteArray && keyValue <= listBlocks[end+1].records[0].fgPctHomeByteArray) {
+    if (keyValue >= bytesToFloat(listBlocks[start-1].records[listBlocks[start-1].numRecords-1].fgPctHomeByteArray) && keyValue <= bytesToFloat(listBlocks[end+1].records[0].fgPctHomeByteArray)) {
         return std::make_pair(start, 0);
     }
 
     // Error
+    cout << keyValue << " " << listBlocks[start-1].records[listBlocks[start-1].numRecords-1].fgPctHomeByteArray << " " << listBlocks[end+1].records[0].fgPctHomeByteArray << endl;
     std::cout << "Error!! Most likely inserted record == smallest or largest as not handled yet" << std::endl;
+    exit(-1);
     return std::make_pair(-1, -1);
 }
 
@@ -295,17 +292,10 @@ void BlockManager ::insertRecord(Record rec)
     ib += ir / MAX_RECORDS;
     ir %= MAX_RECORDS;
 
-    cout << "IB" << ib << "IR" << ir << endl;
     shiftRecordsDown(ib, ir, 1);
     listBlocks[ib].records[ir] = rec;
     numRecords++;
     listBlocks[numDataBlocks-1].numRecords++;
-
-    for (int i = 0; i < numDataBlocks; i++) {
-        for (int j = 0; j < listBlocks[i].numRecords; j++) {
-            cout << "After move " << listBlocks[i].records[j].fgPctHomeByteArray << endl;
-        }
-    }
 }
 
 void BlockManager ::buildIndex(BPlusTree *btree)
@@ -326,7 +316,7 @@ void BlockManager ::buildIndex(BPlusTree *btree)
 
 void BlockManager ::displayStats()
 {
-    cout << "=========Block Manager statistics=========" << endl;
+    cout << "========= Block Manager statistics =========" << endl;
     cout << "Total number of records stored: " << numRecords << endl;
     cout << "Size of each record: " << sizeof(Record) << endl;
     cout << "Number of records stored in each block: " << MAX_RECORDS << endl;

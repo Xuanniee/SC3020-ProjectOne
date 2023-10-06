@@ -9,6 +9,14 @@
 using namespace std;
 
 int main() {
+    /*
+    ============== INSERTING RECORDS TO BLOCK MANAGER ==============
+            ========= Block Manager statistics =========
+            Total number of records stored: 26651
+            Size of each record: 20
+            Number of records stored in each block: 19
+            Number of blocks for storing data: 1403
+    */
     BlockManager blockManager = BlockManager();
     vector<Record> recordBytes = loadData();
 
