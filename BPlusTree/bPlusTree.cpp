@@ -9,6 +9,7 @@
 #include <vector>
 #include <tuple>
 #include "bPlusTree.h"
+#include "../loadData.h"
 
 
 /**
@@ -571,7 +572,7 @@ void BPlusTree :: _updateUpstream(Node*, std::vector<std::pair<Node*, int> > st)
     if (i_sibling != -1) {
         sibling = (InternalNode*) parent->children[i_sibling];
 
-        if (offset_parent < offset) {
+        if (offset_parent > i_sibling) {
             // borrow from left sibling
             _shift(node, 0, 1); // make space for borrowed key
             node->children[0] = sibling->children[sibling->numKeysInserted--];
@@ -601,22 +602,18 @@ void BPlusTree :: _updateUpstream(Node*, std::vector<std::pair<Node*, int> > st)
         return;
     }
     
-    if (offset_parent == 0) {
-        // merge onto right sibling
-        node->mergeRight((InternalNode*) parent->children[offset_parent+1]);
-        _updateUpstream(parent, st);
-    } else {
-        // merge onto left sibling
-        node->mergeLeft((InternalNode*) parent->children[offset_parent-1]);
-        _updateUpstream(parent, st);
-    }
+    // merge onto right sibling
+    if (offset_parent == 0) node->mergeRight((InternalNode*) parent->children[offset_parent+1]);
+    // merge onto left sibling
+    else node->mergeLeft((InternalNode*) parent->children[offset_parent-1]);
+
+    _updateUpstream(parent, st);
 }
 
 
 void BPlusTree :: updateIndex(float deletedKey) {
 
     std::vector<std::pair<Node*, int> > st = _ancestry(deletedKey);
-    std::cout << "Deleting: " << deletedKey << std::endl;
 
     if (st.empty()) return;
 
@@ -625,12 +622,13 @@ void BPlusTree :: updateIndex(float deletedKey) {
     LeafNode* sibling;
     LeafNode* leaf;
     InternalNode* parent;
-    int offset, i_sibling, i;
+    int offset, offset_parent, i_sibling, i;
     
     std::tie(node, offset) = st.back();
     leaf = (LeafNode*) node;
     st.pop_back();
 
+    leaf->records[offset]->fg3PctHomeByteArray = floatToBytes(2); // mark as deleted
     _shift(leaf, offset+1, -1); // delete
 
     // ------------ CASE 1 ------------
@@ -640,10 +638,11 @@ void BPlusTree :: updateIndex(float deletedKey) {
     
     // ------------ CASE 2 ------------
     // Borrow from sibling
-    std::tie(temp, offset) = st.back();
+
+    std::tie(temp, offset_parent) = st.back();
 
     parent = (InternalNode*) temp;
-    i_sibling = _leafSibling(parent, offset);
+    i_sibling = _leafSibling(parent, offset_parent);
 
     if (i_sibling != -1) {
         sibling = (LeafNode*) (parent->children[i_sibling]);
@@ -653,7 +652,7 @@ void BPlusTree :: updateIndex(float deletedKey) {
             _shift(leaf, 0, 1); // make space for borrowed key
             leaf->records[0] = sibling->records[--sibling->numKeysInserted];
             leaf->keys[0] = sibling->keys[sibling->numKeysInserted];
-            parent->keys[offset-1] = leaf->keys[0];
+            parent->keys[offset_parent-1] = leaf->keys[0];
         } else {
             // borrow from right sibling
             leaf->keys[leaf->numKeysInserted++] = sibling->keys[0];
@@ -666,7 +665,7 @@ void BPlusTree :: updateIndex(float deletedKey) {
     } 
 
     // ------------ CASE 3 ------------
-    // Unable to borrow, hence need to delete itself & parent's ptr
+    // Unable to borrow, hence need to merge with sibling & delete parent's ptr
     // since we delete a leaf node, we need to update it's left leaf's pointer
 
     for (i=st.size()-1; i>=0; i--) {
@@ -681,6 +680,12 @@ void BPlusTree :: updateIndex(float deletedKey) {
         }
         ((LeafNode*) temp)->next = leaf->next;
     }
+
+    // merge onto right sibling
+    if (offset_parent == 0) leaf->mergeRight((LeafNode*) parent->children[offset_parent+1]);
+    // merge onto left sibling
+    else leaf->mergeLeft((LeafNode*) parent->children[offset_parent-1]);
+    
     _updateUpstream(parent, st);
 }
 
