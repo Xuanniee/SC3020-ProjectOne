@@ -332,16 +332,3 @@ void BlockManager :: buildIndex(BPlusTree* btree) {
         }
     }
 }
-
-int main(){
-    vector<Record> recArr = loadData();
-    cout << recArr[0].teamIdHome << endl;
-    // BlockManager blkManager = BlockManager();
-    // for (Record rec : recArr){
-    //     blkManager.insertRecord(rec);
-    // }
-    
-    // std::cout << blkManager.getNumBlocks() << std::endl;
-
-
-}

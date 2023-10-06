@@ -4,10 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <tuple>
 #include "../loadData.h"
 #include "../BPlusTree/bPlusTree.h"
 #include "../Node/node.h"
-#include <tuple>
+
 
 // Maximum number of Records in a Data Block {400B - 4B / 20B} should be 19 Blocks, because of block 
 // header storing the attribute
@@ -131,8 +132,6 @@ class BlockManager {
          */
         void buildIndex(BPlusTree* btree);
 };      
-
-int main();
 
 #endif
 
