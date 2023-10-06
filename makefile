@@ -14,10 +14,10 @@ blockManager.o:
 	$(CC) $(CFLAGS) -std=c++17 -c Block\ Manager/blockManager.cpp -IBPlusTree/ -INode/ -IRecord/ -o blockManager.o
 
 node.o:
-	$(CC) $(CFLAGS) Node/node.cpp -IRecord/ -o node.o
+	$(CC) $(CFLAGS) -c Node/node.cpp -IRecord/ -o node.o
 
 loadData.o:
-	$(CC $(CFLAGS) loadData.cpp -o loadData.o
+	$(CC) $(CFLAGS) -c loadData.cpp -IRecord -o loadData.o
 
 clean: 
 	$(RM) main main.o blockManager.o bPlusTree.o node.o loadData.o

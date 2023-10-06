@@ -37,6 +37,15 @@ class BPlusTree {
         }
 
         /**
+         * @brief Set the Root object
+         * 
+         * @param node 
+         */
+        void setRoot(Node* node) {
+            root = node;
+        }
+
+        /**
          * @brief Search the tree for a record given the record key
          * If there are duplicate records, only the address of the first record with the key is returned
          * 
@@ -61,14 +70,14 @@ class BPlusTree {
          * 
          * @return Stack containing pairs of parent nodes and key offset
         */
-        std::vector<std::pair<Node*, int>> _ancestry(float key);
+        std::vector<std::pair<Node*, int> > _ancestry(float key);
 
         /**
          * @brief Recusively update upstream internal nodes
          * 
          * @param st Stack of parent nodes & offsets
         */
-        void _updateUpstream(Node*, std::vector<std::pair<Node*, int>> st);
+        void _updateUpstream(Node*, std::vector<std::pair<Node*, int> > st);
 
         /**
          * @brief rebalancing of index after a key is deleted from the database
@@ -91,7 +100,7 @@ class BPlusTree {
  * @param st Ancestry stack
  * @param key Smallest key value
 */
-void _updateFirstLeft( std::vector<std::pair<Node*, int>> st, float key);
+void _updateFirstLeft( std::vector<std::pair<Node*, int> > st, float key);
 
 
 /**
