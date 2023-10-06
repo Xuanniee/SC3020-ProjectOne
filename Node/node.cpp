@@ -1,81 +1,60 @@
-#include <string.h>
+#include <cstring>
 #include "node.h"
-#include "../loadData.h"
 
 
 // ---------------- InternalNode ----------------
-void InternalNode :: merge(InternalNode* right) {
-    Node** _children = right->children;
-    float* _keys = right->keys;
-    int i;
-    
-    for (i=0; i<right->numKeysInserted; i++) {
-        keys[numKeysInserted+i] = _keys[i];
-        children[numKeysInserted+i+1] = _children[i];
+void InternalNode :: mergeLeft(InternalNode* left) {
+    int n = (left->numKeysInserted)++;
+    Node* curr;
+
+    std::cout << "[mergeLeft] n: " << n << std::endl;
+    std::cout << "[mergeLeft] numKeysInserted: " << numKeysInserted << std::endl;
+
+    std::memcpy(left->keys+n, keys, numKeysInserted++*sizeof(float));
+    std::memcpy(left->children+n+1, children, numKeysInserted*sizeof(Node*));
+    std::cout << "[mergeLeft] left->keys: " << left->keys[0] << "," << left->keys[1] << std::endl;
+
+    curr = children[0];
+    while (dynamic_cast<InternalNode*>(curr)) {
+        curr = ((InternalNode*) curr)->children[0];
     }
-    children[numKeysInserted+i+1] = _children[i];
-}    
+    left->keys[numKeysInserted] = curr->keys[0];
 
+    std::cout << "[mergeLeft] left->keys: " << left->keys[0] << "," << left->keys[1] << std::endl;
+    std::cout << "[mergeLeft] left->numKeys: " << left->numKeysInserted << std::endl;
+    left->numKeysInserted += numKeysInserted-1;
 
-void InternalNode :: borrowLeft(InternalNode* left) {
-    // shift all data down by 1 slot
-    std::memcpy(children+1, children, 1);
-    std::memcpy(keys, keys+1, 1);
-
-    // copy over borrowed data from left sibling
-    children[0] = left->children[left->numKeysInserted];
-    (left->numKeysInserted)--;
-    keys[0] = children[1]->keys[0];
+    free(this);
 }
 
 
-void InternalNode :: borrowRight(InternalNode* right) {
-    // copy over borrowed data from right sibling
-    keys[numKeysInserted] = right->children[0]->keys[0];
-    numKeysInserted++;
-    children[numKeysInserted] = right->children[0];
-    
-    // shift all data down by 1 slot (in sibling)
-    std::memcpy(right->children, right->children+1, right->numKeysInserted);
-    (right->numKeysInserted)--;
-    std::memcpy(right->keys, right->keys+1, right->numKeysInserted);
-}
+void InternalNode :: mergeRight(InternalNode* right) {
+    int n = right->numKeysInserted;
+    Node* curr;
 
+    std::cout << "[mergeRight] right->keys[0]: " << right->keys[0] << ", n: " << n << ", numKeys: " << numKeysInserted << std::endl;
 
-// ---------------- LeafNode ----------------
-void LeafNode :: merge(LeafNode* right) {
-    Record** _records = right->records;
-    float* _keys = right->keys;
-    int i;
+    // make space in dest
+    std::memcpy(right->keys+(++numKeysInserted), right->keys, n*sizeof(float));
+    std::memcpy(right->children+numKeysInserted, right->children, (n+1)*sizeof(Node*));
+
+    std::cout << "[mergeRight] right->keys: " << right->keys[0] << "," << right->keys[1] << std::endl;
+
+    std::cout << "XXX: " << children[0]->keys[0] << std::endl;
+    // copy from left to right
+    std::memcpy(right->children, children, (numKeysInserted--)*sizeof(Node*));
+    std::memcpy(right->keys, keys, numKeysInserted*sizeof(float));
+    std::cout << "[mergeRight] numKeys: " << numKeysInserted << std::endl;
+    std::cout << "[mergeRight] right->keys: " << right->keys[0] << "," << right->keys[1] << std::endl;
     
-    for (i=0; i<right->numKeysInserted; i++) {
-        keys[numKeysInserted+i] = _keys[i];
-        records[numKeysInserted+i+1] = _records[i];
+    curr = right->children[numKeysInserted+1];
+    while (dynamic_cast<InternalNode*>(curr)) {
+        curr = ((InternalNode*) curr)->children[0];
     }
-    records[numKeysInserted+i+1] = _records[i];
-}
+    right->keys[numKeysInserted] = curr->keys[0];
 
-
-void LeafNode :: borrowLeft(LeafNode* left) {
-    // shift all data down by 1 slot
-    std::memcpy(records+1, records, numKeysInserted+1);
-    std::memcpy(keys+1, keys, numKeysInserted);
-
-    // copy over borrowed data from left sibling
-    (left->numKeysInserted)--;
-    records[0] = left->records[left->numKeysInserted];
-    keys[0] = left->keys[left->numKeysInserted];
-}
-
-
-void LeafNode :: borrowRight(LeafNode* right) {
-    // copy over borrowed data from right sibling
-    records[numKeysInserted] = right->records[0];
-    keys[numKeysInserted] = right->keys[0];
-    numKeysInserted++;
-    
-    // shift all data down by 1 slot (in sibling)
-    right->numKeysInserted--;
-    std::memcpy(right->records, right->records+1, right->numKeysInserted);
-    std::memcpy(right->keys, right->keys+1, right->numKeysInserted);
+    std::cout << "[mergeRight] right->keys: " << right->keys[0] << "," << right->keys[1] << std::endl;
+    right->numKeysInserted += numKeysInserted+1;
+    std::cout << "[mergeRight] right->numKeys: " << right->numKeysInserted << std::endl;
+    free(this);
 }
