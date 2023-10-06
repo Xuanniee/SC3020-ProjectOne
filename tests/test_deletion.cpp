@@ -1,5 +1,7 @@
 #include "../BPlusTree/bPlusTree.h"
 #include "../loadData.h"
+#include "../Node/node.h"
+#include "../Record/record.h"
 #include <cstring>
 
 

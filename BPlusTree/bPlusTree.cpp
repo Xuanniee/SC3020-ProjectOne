@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <cmath>
+#include <cstring>
 #include <stack>
 #include <queue>
 #include <vector>

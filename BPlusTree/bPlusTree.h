@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <iostream>
 #include <stack>
+#include <vector>
+#include <tuple>
 #include "../Record/record.h"
 #include "../Node/node.h"
 
