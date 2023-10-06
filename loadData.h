@@ -15,10 +15,15 @@
 
 //conversion helper functions
 unsigned char homeToBytes(int num);
+
 int bytesToHome(unsigned char num);
+
 unsigned short int floatToBytes(float num);
+
 float bytesToFloat(unsigned short int num);
+
 short int dateToBytes(std::string date);
+
 std::string bytesToDate(int days);
 
 std::vector<Record> loadData();
