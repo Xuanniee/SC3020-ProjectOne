@@ -36,6 +36,17 @@ class BPlusTree {
             return root;
         }
 
+        void setRoot(Node* node) {
+            root = node;
+        }
+
+        /**
+         * Mutator used for test_deletion. To be removed
+        */
+        void setHeight(int v) {
+            height = v;
+        }
+
         /**
          * @brief Search the tree for a record given the record key
          * If there are duplicate records, only the address of the first record with the key is returned
