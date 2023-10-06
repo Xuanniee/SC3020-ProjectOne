@@ -10,6 +10,36 @@
 #include <tuple>
 #include "bPlusTree.h"
 
+/**
+ * @brief Function to count the number of nodes in a B+ Tree
+ * 
+ * @param rootNode 
+ * @return int 
+ */
+int BPlusTree::countNodesInBPlusTree(Node* rootNode) {
+    // Base Case - Tree is Empty
+    if (rootNode == NULL) {
+        return 0;
+    }
+
+    if (this->getHeight() == 1) {
+        // Root Node only
+        return 1;
+    }
+    // Any other scenario must be an internal node
+    InternalNode *internalNode = (InternalNode*) rootNode;
+
+    // Initialise as at least Root exists
+    int numNodes = 1;
+
+    // Iterate over all the Child Nodes of the Root
+    for (int i = 0; i < rootNode->numKeysInserted; i += 1) {
+        // Add all the nodes of a child subtree
+        numNodes += countNodesInBPlusTree(internalNode->children[i]);
+    }
+
+    return numNodes;
+}
 
 /**
  * @brief Helper Function for insertKeyInTree(). Needs a way to insert new keys or records
@@ -100,14 +130,14 @@ std::pair<float*, Record**> insertionSortInsertArray(float key, Record *targetRe
  */
 int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
     // Retrieve attributes of the B+ Tree
-    int heightTree = this->getHeight();
-    Node *BPlusTreeRoot = this->getRoot();
+    // int heightTree = this->getHeight();
+    // Node *BPlusTreeRoot = this->getRoot();
 
     // Prepare the Variables for the findRecordInTree() function
     std::stack<Node*> myStack;
     std::stack<Node*> *myStackPtr = &myStack;
     // Will retrieve the actual record, but won't be relevant in this function
-    Record **recordPtr;
+    Record **recordPtr = NULL;
 
     // Search the Tree to see if the B+ tree contains the Record Key
     bool searchResult = findRecordInTree(key, myStackPtr, recordPtr);
@@ -433,7 +463,7 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
 // }
 
 bool BPlusTree :: findRecordInTree(float key, std::stack<Node*> *stackPtr, Record **recordPtr) {
-    
+    int numIndexBlocks = 1;
     stackPtr->push(root);
     Node* next;
     Record* r = NULL;
@@ -449,6 +479,7 @@ bool BPlusTree :: findRecordInTree(float key, std::stack<Node*> *stackPtr, Recor
         // If next hasn't been assigned, means it refers to the last node pointer
         (next == NULL) && (next = ((InternalNode*) stackPtr->top())->children[stackPtr->top()->numKeysInserted]);
         stackPtr->push(next);
+        numIndexBlocks += 1;
         next = NULL;
     }
 
@@ -462,6 +493,8 @@ bool BPlusTree :: findRecordInTree(float key, std::stack<Node*> *stackPtr, Recor
 
     (found == true) && ((*recordPtr) = r);
 
+    // Print the Number of Index Blocks Accessed
+    std::cout << "Number of Index Nodes Accessed: " << numIndexBlocks << std::endl;
     return found;
 }
 
