@@ -71,6 +71,11 @@ std::pair<int,int> BlockManager :: findRecord(float keyValue) {
     // Initialise Variables to Return
     int targetBlockIndex = -1;
     int targetRecordIndex = -1;
+
+    // Edge Case: 0 Records in Tree
+    if (this->getTotalRecords() == 0) {
+        return std::make_pair(0,0);
+    }
     
     // Use Binary Search to determine the Index of the Block
     while (start <= end) {

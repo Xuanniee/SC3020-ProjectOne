@@ -4,7 +4,11 @@
 #include <iostream>
 #include <cmath>
 #include <stack>
+#include <queue>
+#include <vector>
+#include <tuple>
 #include "bPlusTree.h"
+
 
 /**
  * @brief Helper Function for insertKeyInTree(). Needs a way to insert new keys or records
@@ -461,4 +465,271 @@ bool BPlusTree :: findRecordInTree(float key, std::stack<Node*> *stackPtr, Recor
     (found == true) && ((*recordPtr) = r);
 
     return found;
+}
+
+
+std::vector<std::pair<Node*, int>> BPlusTree :: _ancestry(float key) {
+
+    std::vector<std::pair<Node*, int>> res;
+    Node* curr = root;
+    int _, i;
+    float *keys;
+
+    // internal nodes
+    for (_=1; _<height; _++) {
+        keys = curr->keys;
+        for (i=0; i<curr->numKeysInserted; i++) {
+            if (keys[i] > key) break;
+        }
+        std::cout << "_ancestry (i, keys[i], numKeys) " << i << " | "  << curr->keys[i] << " | " << curr->numKeysInserted << std::endl;
+        res.push_back(std::make_pair(curr, i));
+        curr = ((InternalNode*) curr)->children[i];
+    }
+
+    // leaf node
+    keys = curr->keys;
+    for (i=0; i<curr->numKeysInserted; i++) {
+        if (keys[i] == key) {
+            std::cout << "_ancestry (i, keys[i], numKeys) " << i << " | " << curr->keys[i] << " | " << curr->numKeysInserted << std::endl;
+            res.push_back(std::make_pair(curr, i));
+            return res;
+        }
+    }
+    return std::vector<std::pair<Node*, int>>();
+}
+
+
+void _shift(LeafNode* node, int src, int dir) {
+    int n = (dir==1 ? node->numKeysInserted++ : node->numKeysInserted--) - src;
+    std::cout << "[_shift] src: " << src << ", dir: " << dir << ", n: " << n << std::endl;
+    std::cout << "[_shift] numKeysInserted: " << node->numKeysInserted << std::endl;
+    if (!n || src+dir<0) return;
+    std::memcpy(node->records+src+dir, node->records+src, n*sizeof(Record*));
+    std::memcpy(node->keys+src+dir, node->keys+src, n*sizeof(float)); 
+}
+
+
+void _shift(InternalNode* node, int src, int dir) {
+    int n = (dir==1 ? node->numKeysInserted++ : node->numKeysInserted--) - src;
+    std::cout << "[_shift] src: " << src << ", dir: " << dir << ", n: " << n << std::endl;
+    std::cout << "[_shift] numKeysInserted: " << node->numKeysInserted << std::endl;
+    if (n>=0) std::memcpy(node->children+src+dir, node->children+src, (n+1)*sizeof(Record*));
+    if (n>0) std::memcpy(node->keys+src+dir, node->keys+src, n*sizeof(float)); 
+}
+
+
+int _sibling(InternalNode* parent, int offset) {
+
+    if (offset > 0 && parent->children[offset-1]->numKeysInserted > MIN_INTERNAL_KEYS) return offset-1;
+    if (offset < parent->numKeysInserted && parent->children[offset+1]->numKeysInserted > MIN_INTERNAL_KEYS) return offset+1;
+    return -1;
+}
+
+
+int _leafSibling(InternalNode* parent, int offset) {
+
+    if (offset > 0 && parent->children[offset-1]->numKeysInserted > MIN_LEAF_KEYS) return offset-1;
+    if (offset < parent->numKeysInserted && parent->children[offset+1]->numKeysInserted > MIN_LEAF_KEYS) return offset+1;
+    return -1;
+}
+
+
+void _updateFirstLeft( std::vector<std::pair<Node*, int>> st, float key) {
+    // update first left parent's key
+    for (int i=st.size()-1; i>=0; i--) {
+        if (st[i].second > 0) {
+            ((InternalNode*) st[i].first)->keys[st[i].second-1] = key;
+            break;
+        }
+    }
+}
+
+
+void BPlusTree :: _updateUpstream(Node*, std::vector<std::pair<Node*, int>> st) {
+    Node* temp;
+    InternalNode* node;
+    InternalNode* parent;
+    InternalNode* sibling;
+    int offset, i_sibling, offset_parent;
+    
+    std::tie(temp, offset) = st.back();
+    st.pop_back();
+    node = (InternalNode*) temp;
+
+    _shift(node, offset+1, -1); // delete
+
+    if (node == root) {
+        if (node->numKeysInserted == 0) {
+            root = node->children[0];
+            height--;
+        } else if (node->numKeysInserted == -1) {
+            root = nullptr;
+            height--;
+        }
+        return;
+    }
+    
+    if (node->numKeysInserted >= MIN_INTERNAL_KEYS) return _updateFirstLeft(st, node->children[0]->keys[0]);
+
+    // borrow
+    std::tie(temp, offset_parent) = st.back();
+    parent = (InternalNode*) temp;
+    i_sibling = _sibling(parent, offset);
+
+    if (i_sibling != -1) {
+        sibling = (InternalNode*) parent->children[i_sibling];
+
+        if (offset_parent < offset) {
+            // borrow from left sibling
+            _shift(node, 0, 1); // make space for borrowed key
+            node->children[0] = sibling->children[sibling->numKeysInserted--];
+            node->keys[0] = sibling->keys[sibling->numKeysInserted];
+            parent->keys[offset-1] = node->keys[0];
+            return;
+        } else {
+            // borrow from right sibling
+            node->keys[node->numKeysInserted++] = sibling->children[0]->keys[0];
+            node->children[node->numKeysInserted] = sibling->children[0];
+            _shift(sibling, 1, -1); // delete sibling's first key & ptr
+            temp = sibling->children[0];
+            while (dynamic_cast<InternalNode*>(temp)) {
+                temp = ((InternalNode*) temp)->children[0];
+            }
+            parent->keys[i_sibling-1] = temp->keys[0];
+            return;
+        }
+    }
+    
+    if (offset_parent == 0) {
+        // merge onto right sibling
+        node->mergeRight((InternalNode*) parent->children[offset_parent+1]);
+        _updateUpstream(parent, st);
+    } else {
+        // merge onto left sibling
+        node->mergeLeft((InternalNode*) parent->children[offset_parent-1]);
+        _updateUpstream(parent, st);
+    }
+}
+
+
+void BPlusTree :: updateIndex(float deletedKey) {
+
+    std::vector<std::pair<Node*, int>> st = _ancestry(deletedKey);
+
+    if (st.empty()) return;
+
+    Node* node;
+    Node* temp;
+    LeafNode* sibling;
+    LeafNode* leaf;
+    InternalNode* parent;
+    int offset, i_sibling;
+    
+    std::tie(node, offset) = st.back();
+    leaf = (LeafNode*) node;
+    st.pop_back();
+
+    _shift(leaf, offset+1, -1); // delete
+
+    // ------------ CASE 1 ------------
+    // Sufficient keys remaining
+
+    if (leaf->numKeysInserted >= MIN_LEAF_KEYS) return _updateFirstLeft(st, leaf->keys[0]);
+
+    // ------------ CASE 2 ------------
+    // Borrow from sibling
+
+    std::tie(temp, offset) = st.back();
+
+    parent = (InternalNode*) temp;
+    i_sibling = _leafSibling(parent, offset);
+
+    if (i_sibling != -1) {
+        sibling = (LeafNode*) (parent->children[i_sibling]);
+
+        if (node->keys[0] > sibling->keys[0]) {
+            // borrow from left sibling
+            _shift(leaf, 0, 1); // make space for borrowed key
+            leaf->records[0] = sibling->records[--sibling->numKeysInserted];
+            leaf->keys[0] = sibling->keys[sibling->numKeysInserted];
+            parent->keys[offset-1] = leaf->keys[0];
+        } else {
+            // borrow from right sibling
+            leaf->keys[leaf->numKeysInserted++] = sibling->keys[0];
+            leaf->records[leaf->numKeysInserted] = sibling->records[0];
+            _shift(sibling, 1, -1); // delete sibling's first key & ptr
+            parent->keys[i_sibling-1] = sibling->keys[0];
+            _updateFirstLeft(st, leaf->keys[0]);
+        }
+        return;
+    } 
+
+    // ------------ CASE 3 ------------
+    // Unable to borrow, hence need to delete itself & parent's ptr
+
+    _updateUpstream(parent, st);
+}
+
+
+void BPlusTree :: print() {
+    std::queue<std::queue<Node*>> curr;
+    std::queue<std::queue<Node*>> next;
+    std::queue<Node*> temp;
+    std::queue<Node*> temp2;
+    float* keys;
+    Node** children;
+    Node* child;
+    int i, j;
+
+    temp.push(root);
+    curr.push(temp);
+    for (int _=1; _<height; _++) {
+        while (!curr.empty()) {
+            temp = curr.front();
+            curr.pop();
+
+            std::cout << "[ ";
+            
+            while (!temp.empty()) {
+                temp2 = std::queue<Node*>();
+                child = temp.front();
+                temp.pop();
+                keys = child->keys;
+                children = ((InternalNode*) child)->children;
+                std::cout << "(";
+
+                for (i = 0; i<child->numKeysInserted; i++) {
+                    std::cout << keys[i] << ",";
+                    temp2.push(children[i]);
+                }
+                temp2.push(children[i]);
+                next.push(temp2);
+                std::cout << ") ";
+            }
+            std::cout << "] ";
+            
+        }
+        std::cout << std::endl;
+        std::swap(curr, next);
+        next = std::queue<std::queue<Node*>>();
+    }
+    while (!curr.empty()) {
+        temp = curr.front();
+        curr.pop();
+
+        std::cout << "[ ";
+        while (!temp.empty()) {
+            child = temp.front();
+            keys = child->keys;
+            temp.pop();
+
+            std::cout << "(";
+            for (i=0; i<child->numKeysInserted; i++) {
+                std::cout << keys[i] << ",";
+            }
+            std::cout << ") ";
+        }
+        std::cout << "] ";
+    }
+    std::cout<<std::endl;
 }
