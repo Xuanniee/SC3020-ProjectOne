@@ -569,7 +569,7 @@ void BPlusTree :: _updateUpstream(Node*, std::vector<std::pair<Node*, int> > st)
     // borrow
     std::tie(temp, offset_parent) = st.back();
     parent = (InternalNode*) temp;
-    i_sibling = _sibling(parent, offset);
+    i_sibling = _sibling(parent, offset_parent);
 
     if (i_sibling != -1) {
         sibling = (InternalNode*) parent->children[i_sibling];
@@ -578,9 +578,18 @@ void BPlusTree :: _updateUpstream(Node*, std::vector<std::pair<Node*, int> > st)
             // borrow from left sibling
             _shift(node, 0, 1); // make space for borrowed key
             node->children[0] = sibling->children[sibling->numKeysInserted--];
-            node->keys[0] = sibling->keys[sibling->numKeysInserted];
-            parent->keys[offset-1] = node->keys[0];
-            return;
+
+            temp = node->children[1];
+            while (dynamic_cast<InternalNode*>(temp)) {
+                temp = ((InternalNode*) temp)->children[0];
+            }
+            node->keys[0] = temp->keys[0];
+
+            temp = node->children[0];
+            while (dynamic_cast<InternalNode*>(temp)) {
+                temp = ((InternalNode*) temp)->children[0];
+            }
+            parent->keys[offset_parent-1] = temp->keys[0];
         } else {
             // borrow from right sibling
             node->keys[node->numKeysInserted++] = sibling->children[0]->keys[0];
@@ -591,8 +600,8 @@ void BPlusTree :: _updateUpstream(Node*, std::vector<std::pair<Node*, int> > st)
                 temp = ((InternalNode*) temp)->children[0];
             }
             parent->keys[i_sibling-1] = temp->keys[0];
-            return;
         }
+        return;
     }
     
     if (offset_parent == 0) {
