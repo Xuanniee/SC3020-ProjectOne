@@ -38,10 +38,6 @@ class BPlusTree {
             return root;
         }
 
-        void setRoot(Node* node) {
-            root = node;
-        }
-
         /**
          * Mutator used for test_deletion. To be removed
         */

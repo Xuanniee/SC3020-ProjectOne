@@ -326,7 +326,7 @@ void BlockManager ::buildIndex(BPlusTree *btree)
 
 void BlockManager ::displayStats()
 {
-    cout << "=========Block Manager statistics=========" << endl;
+    cout << "=========Block Manager Statistics=========" << endl;
     cout << "Total number of records stored: " << numRecords << endl;
     cout << "Size of each record: " << sizeof(Record) << endl;
     cout << "Number of records stored in each block: " << MAX_RECORDS << endl;

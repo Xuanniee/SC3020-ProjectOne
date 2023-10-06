@@ -214,7 +214,6 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
         if (parentNode == NULL) {
             // Create a New Parent Node
             InternalNode *newParentNode = (InternalNode*) malloc(sizeof(InternalNode));
-            newParentNode->numChildrenNodes = 2;
             newParentNode->numKeysInserted = 1;
             // newParentNode->parent = NULL;
 
@@ -245,11 +244,11 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
 
             // Cannot update the numKeys until we insert the new key
             parentNode->keys[parentNode->numKeysInserted] = newKey;
-            parentNode->children[parentNode->numChildrenNodes] = newLeafNode;
+            // Num Children Nodes is always numKeys + 1
+            parentNode->children[parentNode->numKeysInserted + 1] = newLeafNode;
 
             // Update the Number of Keys Inserted
             parentNode->numKeysInserted += 1;
-            parentNode->numChildrenNodes += 1;
 
             // Don't need update parent, end process
             reachRoot = true;
@@ -298,11 +297,9 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
             newUncleNode->children[NUM_KEYS - 1] = NULL;
 
             // Update Attributes for Uncle Node (On the Right)
-            newUncleNode->numChildrenNodes = numKeysRightParent;
             newUncleNode->numKeysInserted = numKeysRightParent;
 
             // Update Attributes for Original Parent Node (On the Left)
-            parentNode->numChildrenNodes = numKeysLeftParent;
             parentNode->numKeysInserted = numKeysLeftParent;
 
             // Parent Node to Point to sibling Node
@@ -469,9 +466,9 @@ bool BPlusTree :: findRecordInTree(float key, std::stack<Node*> *stackPtr, Recor
 }
 
 
-std::vector<std::pair<Node*, int>> BPlusTree :: _ancestry(float key) {
+std::vector<std::pair<Node*, int> > BPlusTree :: _ancestry(float key) {
 
-    std::vector<std::pair<Node*, int>> res;
+    std::vector<std::pair<Node*, int> > res;
     Node* curr = root;
     int _, i;
     float *keys;
@@ -494,7 +491,7 @@ std::vector<std::pair<Node*, int>> BPlusTree :: _ancestry(float key) {
             return res;
         }
     }
-    return std::vector<std::pair<Node*, int>>();
+    return std::vector<std::pair<Node*, int> >();
 }
 
 
@@ -529,7 +526,7 @@ int _leafSibling(InternalNode* parent, int offset) {
 }
 
 
-void _updateFirstLeft( std::vector<std::pair<Node*, int>> st, float key) {
+void _updateFirstLeft( std::vector<std::pair<Node*, int> > st, float key) {
     // update first left parent's key
     for (int i=st.size()-1; i>=0; i--) {
         if (st[i].second > 0) {
@@ -540,7 +537,7 @@ void _updateFirstLeft( std::vector<std::pair<Node*, int>> st, float key) {
 }
 
 
-void BPlusTree :: _updateUpstream(Node*, std::vector<std::pair<Node*, int>> st) {
+void BPlusTree :: _updateUpstream(Node*, std::vector<std::pair<Node*, int> > st) {
     Node* temp;
     InternalNode* node;
     InternalNode* parent;
@@ -609,7 +606,7 @@ void BPlusTree :: _updateUpstream(Node*, std::vector<std::pair<Node*, int>> st) 
 
 void BPlusTree :: updateIndex(float deletedKey) {
 
-    std::vector<std::pair<Node*, int>> st = _ancestry(deletedKey);
+    std::vector<std::pair<Node*, int> > st = _ancestry(deletedKey);
     std::cout << "Deleting: " << deletedKey << std::endl;
 
     if (st.empty()) return;
@@ -684,14 +681,14 @@ void BPlusTree :: updateIndex(float deletedKey) {
 
 
 void BPlusTree :: print() {
-    std::queue<std::queue<Node*>> curr;
-    std::queue<std::queue<Node*>> next;
+    std::queue<std::queue<Node*> > curr;
+    std::queue<std::queue<Node*> > next;
     std::queue<Node*> temp;
     std::queue<Node*> temp2;
     float* keys;
     Node** children;
     Node* child;
-    int i, j;
+    int i;
 
     temp.push(root);
     curr.push(temp);
@@ -723,7 +720,7 @@ void BPlusTree :: print() {
         }
         std::cout << std::endl;
         std::swap(curr, next);
-        next = std::queue<std::queue<Node*>>();
+        next = std::queue<std::queue<Node*> >();
     }
     while (!curr.empty()) {
         temp = curr.front();
