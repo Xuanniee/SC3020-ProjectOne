@@ -35,6 +35,13 @@ class BlockManager {
         int numRecords;
         DataBlock listBlocks[MAX_BLOCKS];
 
+        /**
+         * @brief find a record given a keyValue, or the appropriate place to insert a record with the given key.
+         * 
+         * @return Record*
+         */
+        std::pair<int,int> findRecordBinarySearch(float keyValue);
+
     public:
         BlockManager() {
             numDataBlocks = 0;
@@ -65,12 +72,7 @@ class BlockManager {
          * @return int
          */
         int deleteDataBlock(DataBlock *blockToDelete);
-        /**
-         * @brief find a record given a keyValue, or the appropriate place to insert a record with the given key.
-         * 
-         * @return Record*
-         */
-        std::pair<int,int> findRecord(float keyValue);
+        
         /**
          * @brief 
          * 
@@ -101,7 +103,7 @@ class BlockManager {
         void displayStats();
 
         /**
-         * @brief Delete range of keys
+         * @brief Delete range of keys, inclusive of both upper & lower limits
          * 
          * @param btree B+ Tree index
          * @param low Lower key limit

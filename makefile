@@ -8,7 +8,7 @@ main.o: main.cpp
 	$(CC) $(CFLAGS) -c main.cpp -IBlock\ Manager / -IBPlusTree -INode/ -IRecord/ -o main.o
 
 bPlusTree.o:
-	$(CC) $(CFLAGS) -c BPlusTree/bPlusTree.cpp -INode/ -IRecord/ -o bPlusTree.o
+	$(CC) $(CFLAGS) -std=c++17 -c BPlusTree/bPlusTree.cpp -INode/ -IRecord/ -o bPlusTree.o
 
 blockManager.o:
 	$(CC) $(CFLAGS) -std=c++17 -c Block\ Manager/blockManager.cpp -IBPlusTree/ -INode/ -IRecord/ -o blockManager.o

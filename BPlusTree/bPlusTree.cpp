@@ -626,15 +626,11 @@ void BPlusTree :: updateIndex(float deletedKey) {
 
     // ------------ CASE 1 ------------
     // Sufficient keys remaining
-
-    std::cout << "CASE 1" <<std::endl;
-    std::cout << leaf->numKeysInserted <<std::endl;
     
     if (leaf->numKeysInserted >= MIN_LEAF_KEYS) return _updateFirstLeft(st, leaf->keys[0]);
     
     // ------------ CASE 2 ------------
     // Borrow from sibling
-    std::cout << "CASE 2" <<std::endl;
     std::tie(temp, offset) = st.back();
 
     parent = (InternalNode*) temp;
@@ -663,7 +659,7 @@ void BPlusTree :: updateIndex(float deletedKey) {
     // ------------ CASE 3 ------------
     // Unable to borrow, hence need to delete itself & parent's ptr
     // since we delete a leaf node, we need to update it's left leaf's pointer
-    std::cout << "CASE 3" <<std::endl;
+
     for (i=st.size()-1; i>=0; i--) {
         offset = st[i].second;
         if (offset > 0) break; 
