@@ -1,6 +1,6 @@
 #ifndef NODE_H
 #define NODE_H
-#include "../Block Manager/blockManager.h"
+#include "../Record/record.h"
 
 
 #define NUM_KEYS 39
@@ -14,7 +14,7 @@ struct Node {
     int numKeysInserted;
 
     virtual ~Node() {};
-};
+} Node;
 
 
 struct InternalNode: Node {
@@ -34,12 +34,12 @@ struct InternalNode: Node {
      * @param right Sibling internal node on the right of this node
     */
     void mergeRight(InternalNode* right);    
-};
+} InternalNode;
 
 
 struct LeafNode: Node {
     Record* records[NUM_KEYS];
     LeafNode* next;
-};
+} LeafNode;
 
 #endif

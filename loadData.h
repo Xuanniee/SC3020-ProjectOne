@@ -9,7 +9,7 @@
 #include <vector>
 #include <cmath> 
 #include <ctime>
-#include "Block Manager/blockManager.h"
+#include "./Record/record.h"
 
 #define NUM_FIELDS 9
 

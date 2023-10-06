@@ -7,7 +7,6 @@
 #include <cmath> 
 #include <ctime>
 #include "loadData.h"
-#include "Block Manager/blockManager.h"
 
 using namespace std;
 
@@ -98,11 +97,11 @@ vector<Record> loadData(){
         short int missing = 0;
         
         r.gameDateEst = dateToBytes(recordArr[i][0]); //correct
-        cout<< "date: " + recordArr[i][0] << " --> " << r.gameDateEst << endl;
+        // cout<< "date: " + recordArr[i][0] << " --> " << r.gameDateEst << endl;
 
         
         r.teamIdHome = stoi(recordArr[i][1]);
-        cout<< "ID: " << recordArr[i][1] << " --> " << r.teamIdHome << endl;
+        // cout<< "ID: " << recordArr[i][1] << " --> " << r.teamIdHome << endl;
     
         try{
             // r.ptsHome = intToBytes(stoi(recordArr[i][2]));
@@ -111,7 +110,7 @@ vector<Record> loadData(){
             r.ptsHome = static_cast<unsigned char>(0);
             missing += pow(2,2); //the index 4 of the 9 bits will be 1
         }
-        cout<< "PTS: " << recordArr[i][2] << " --> " << r.ptsHome << endl;
+        // cout<< "PTS: " << recordArr[i][2] << " --> " << r.ptsHome << endl;
         
         try{
             r.fgPctHomeByteArray = floatToBytes(stof(recordArr[i][3]));
@@ -120,7 +119,7 @@ vector<Record> loadData(){
             r.fgPctHomeByteArray = floatToBytes(0.000);
             missing += pow(2,3);
         }
-        cout<< "FG: " << recordArr[i][3] << " --> " << r.fgPctHomeByteArray << endl;
+        // cout<< "FG: " << recordArr[i][3] << " --> " << r.fgPctHomeByteArray << endl;
 
         try{
             r.ftPctHomeByteArray = floatToBytes(stof(recordArr[i][4]));
@@ -130,7 +129,7 @@ vector<Record> loadData(){
             r.ftPctHomeByteArray = floatToBytes(0.000);
             missing += pow(2,4);
         }
-        cout<< "FT: " << recordArr[i][4] << " --> " << r.ftPctHomeByteArray << endl;
+        // cout<< "FT: " << recordArr[i][4] << " --> " << r.ftPctHomeByteArray << endl;
         
         try{
             r.fg3PctHomeByteArray = floatToBytes(stof(recordArr[i][5]));
@@ -140,7 +139,7 @@ vector<Record> loadData(){
             r.fg3PctHomeByteArray = floatToBytes(0.000);
             missing += pow(2,5);
         }
-        cout<< "FG3: " << recordArr[i][5] << " --> " << r.fg3PctHomeByteArray << endl;
+        // cout<< "FG3: " << recordArr[i][5] << " --> " << r.fg3PctHomeByteArray << endl;
         
         try{
             r.astHome = static_cast<unsigned char>(stoi(recordArr[i][6]));
@@ -150,7 +149,7 @@ vector<Record> loadData(){
             r.astHome = static_cast<unsigned char>(0);
             missing +=pow(2,6);
         }
-        cout<< "AST: " << recordArr[i][6] << " --> " << r.astHome << endl;
+        // cout<< "AST: " << recordArr[i][6] << " --> " << r.astHome << endl;
         // cout << bytesToHome(r.astHome) << endl;
 
         try{
@@ -161,17 +160,17 @@ vector<Record> loadData(){
             r.rebHome = static_cast<unsigned char>(0);
             missing += pow(2,7);
         }
-        cout<< "REB: " << recordArr[i][7] << " --> " << r.rebHome << endl;
+        // cout<< "REB: " << recordArr[i][7] << " --> " << r.rebHome << endl;
         // cout << bytesToHome(r.rebHome) << endl;
         
         r.homeTeamWins= (bool)(stoi(recordArr[i][8]));
-        cout<< "win: " << r.homeTeamWins << endl;
+        // cout<< "win: " << r.homeTeamWins << endl;
 
         r.recorderHeader = missing;
         
-        cout<<"Empty fields: "<<r.recorderHeader<<endl;
-        cout<< "bytesize = "<< sizeof(r) << endl;
-        cout << endl;
+        // cout<<"Empty fields: "<<r.recorderHeader<<endl;
+        // cout<< "bytesize = "<< sizeof(r) << endl;
+        // cout << endl;
     
         recordBytes.push_back(r);
         
