@@ -355,10 +355,7 @@ void BlockManager ::deleteRange(BPlusTree *btree, float low, float upp)
         recs = leaf->records;
 
         for (i=0; i<leaf->numKeysInserted; i++) {
-            if (keys[i] <=  upp) {
-                to_del.push_back(keys[i]);
-                recs[i] = nullptr; // mark as deleted to avoid shifting
-            }
+            if (keys[i] <=  upp) to_del.push_back(keys[i]);
             else break;         
         }
         leaf = leaf->next;
