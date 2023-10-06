@@ -65,12 +65,7 @@ int BlockManager ::deleteDataBlock(DataBlock *blockToDelete)
  * @param keyValue
  * @return Record*
  */
-std::pair<int, int> BlockManager ::findRecord(float keyValue)
-{
-    if (numRecords == 0)
-    {
-        return std::make_pair(0, 0);
-    }
+std::pair<int,int> BlockManager :: findRecord(float keyValue) {
     // Initialise Index Variables
     int start = 0;
     int end = this->numDataBlocks - 1;
@@ -90,7 +85,7 @@ std::pair<int, int> BlockManager ::findRecord(float keyValue)
     while (start <= end)
     {
         // Retrieve the Middle Data Block
-        curr = start + (end - start) / 2;
+        curr = start + (end - start)/ 2;
         DataBlock *currBlock = &(listBlocks[curr]);
 
         // Retrieve the first and last records from the Middle (Current) Block
@@ -116,7 +111,6 @@ std::pair<int, int> BlockManager ::findRecord(float keyValue)
         {
             // Found Target Block, record the index
             targetBlockIndex = curr;
-
             // Iterate over all the Records to check if target Record is present
             int numRecords = currBlock->numRecords;
             for (int i = 0; i < numRecords; i += 1)
@@ -159,9 +153,12 @@ std::pair<int, int> BlockManager ::findRecord(float keyValue)
         else
         {
             // Should not be possible if ordered
-            std::cout << keyValue << " " << firstRecordKeyValue << " " << lastRecord.fgPctHomeByteArray << std::endl;
-            std::cout << currBlock->numRecords << endl;
-            std::cout << "Error!! Should not be in this loop if ordered sequentially within block." << std::endl;
+            std::cout << start << " " << end << endl;
+            cout << currBlock->numRecords << endl;
+            for (int i = 0; i < numDataBlocks; i++) {
+                cout << i << " " << listBlocks[i].numRecords << endl;
+            }
+            exit(-1);
         }
     }
 
@@ -181,7 +178,7 @@ std::pair<int, int> BlockManager ::findRecord(float keyValue)
     {
         std::cout << "Equals current smallest record" << std::endl;
     }
-
+    
     // Repeat for Largest Record
     DataBlock *largestDataBlock = &(this->listBlocks[this->numDataBlocks - 1]);
     Record largestRecord = largestDataBlock->records[largestDataBlock->numRecords - 1];
@@ -195,6 +192,11 @@ std::pair<int, int> BlockManager ::findRecord(float keyValue)
     else if (keyValue == largestRecordKeyValue)
     {
         std::cout << "Equals current largest record" << std::endl;
+    }
+
+    // Larger than the first block last record and block i +1 first record
+    if (keyValue >= listBlocks[start-1].records[listBlocks[start-1].numRecords-1].fgPctHomeByteArray && keyValue <= listBlocks[end+1].records[0].fgPctHomeByteArray) {
+        return std::make_pair(start, 0);
     }
 
     // Error
@@ -232,8 +234,8 @@ void BlockManager ::shiftRecordsDown(int blockIndex, int recordIndex, int nShift
         exit(0);
     }
 
-    int remainingSpace = MAX_RECORD_INDEX - this->listBlocks[blockIndex].numRecords;
-    int toShift = MAX_RECORD_INDEX - nShift;
+    int remainingSpace = MAX_RECORDS - listBlocks[blockIndex].numRecords;
+    int toShift = MAX_RECORDS - nShift;
 
     // *****TODO Need to account for the case when a new block must be created to account for the shift
     // Im assuming that creation of block is done before shifting, and that shifting will not cause data to go out of bounds
@@ -246,33 +248,34 @@ void BlockManager ::shiftRecordsDown(int blockIndex, int recordIndex, int nShift
             If the number of shifts is more than the number of records remaining after the recordIndex, toShift is just set to the MAX_RECORD_INDEX-recordIndex.
             This is because toShift would become negative otherwise.
         */
-        toShift = MAX_RECORD_INDEX - recordIndex - nShift <= 0 ? 0 : MAX_RECORD_INDEX - recordIndex - nShift;
+        toShift = MAX_RECORDS - recordIndex - nShift <= 0 ? 0 : MAX_RECORDS - recordIndex - nShift;
 
         // Store the records at the end of the block that will be pushed out by the shifting procedure in tempHoldingArea.
-        memcpy(tempHoldingArea, &(this->listBlocks[blockIndex].records[MAX_RECORD_INDEX - nShift]), sizeof(Record) * nShift);
+        memcpy(tempHoldingArea, &(listBlocks[blockIndex].records[MAX_RECORDS-nShift]), sizeof(Record)*nShift);
 
         if (toShift != 0)
         {
             // Do the actual shifting of data within the block itself
-            memmove(&(this->listBlocks[blockIndex].records[recordIndex + nShift]), &(this->listBlocks[blockIndex].records[recordIndex]), sizeof(Record) * toShift);
-        }
+            memmove(&(listBlocks[blockIndex].records[recordIndex + nShift]), &(listBlocks[blockIndex].records[recordIndex]), sizeof(Record)*toShift);
+        }   
         // Write the mainHoldingArea to the front of the block
-        memcpy(&(this->listBlocks[blockIndex].records[recordIndex]), mainHoldingArea, sizeof(Record) * nShift);
+        memcpy(&(listBlocks[blockIndex].records[recordIndex]), mainHoldingArea, sizeof(Record)*nShift);
 
         // Since we are moving to new blocks, having an recordIndex no longer makes sense after the first block.
         recordIndex = 0;
         blockIndex++;
-        remainingSpace = MAX_RECORD_INDEX - this->listBlocks[blockIndex].numRecords;
+        remainingSpace = MAX_RECORDS - listBlocks[blockIndex].numRecords;
 
         // Write the temp to the mainHoldingArea
         memcpy(mainHoldingArea, tempHoldingArea, sizeof(Record) * nShift);
     }
 
+    toShift = MAX_RECORDS - nShift;
     // One final shift at the last block.
-    memmove(&(this->listBlocks[blockIndex].records[recordIndex + nShift]), &(this->listBlocks[blockIndex].records[recordIndex]), sizeof(Record) * toShift);
+    memmove(&(listBlocks[blockIndex].records[recordIndex + nShift]), &(listBlocks[blockIndex].records[recordIndex]), sizeof(Record)*toShift);
 
     // Write the main holding area to the front of the block
-    memcpy(&(this->listBlocks[blockIndex].records[0]), mainHoldingArea, sizeof(Record) * nShift);
+    memcpy(&(listBlocks[blockIndex].records[recordIndex]), mainHoldingArea, sizeof(Record)*nShift);
 
     free(mainHoldingArea);
     free(tempHoldingArea);
@@ -292,10 +295,17 @@ void BlockManager ::insertRecord(Record rec)
     ib += ir / MAX_RECORDS;
     ir %= MAX_RECORDS;
 
+    cout << "IB" << ib << "IR" << ir << endl;
     shiftRecordsDown(ib, ir, 1);
     listBlocks[ib].records[ir] = rec;
     numRecords++;
-    listBlocks[numDataBlocks - 1].numRecords++;
+    listBlocks[numDataBlocks-1].numRecords++;
+
+    for (int i = 0; i < numDataBlocks; i++) {
+        for (int j = 0; j < listBlocks[i].numRecords; j++) {
+            cout << "After move " << listBlocks[i].records[j].fgPctHomeByteArray << endl;
+        }
+    }
 }
 
 void BlockManager ::buildIndex(BPlusTree *btree)
