@@ -180,16 +180,3 @@ vector<Record> loadData(){
         }
     return recordBytes;
 };
-
-int main(){
-    vector<Record> recordBytes;
-    recordBytes = loadData();
-    cout << recordBytes[0].teamIdHome << endl;
-
-    BlockManager blkManager = BlockManager();
-    for (int rec=0; rec<recordBytes.size(); rec++){
-        blkManager.insertRecord(recordBytes[rec]);
-    }
-    
-
-}
