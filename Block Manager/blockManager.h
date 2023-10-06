@@ -5,10 +5,11 @@
 #include <stdlib.h>
 #include <iostream>
 #include "../Record/record.h"
+#include <tuple>
 #include "../loadData.h"
 #include "../BPlusTree/bPlusTree.h"
 #include "../Node/node.h"
-#include <tuple>
+
 
 // Maximum number of Records in a Data Block {400B - 4B / 20B} should be 19, because of block 
 // header storing the attribute
