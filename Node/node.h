@@ -8,7 +8,7 @@
 #define MIN_INTERNAL_KEYS NUM_KEYS/2
 
 
-struct Node {
+typedef struct Node {
     // Given the size of the key and the size of a pointer, the number of keys/pointers should be 39
     float keys[NUM_KEYS];
     int numKeysInserted;
@@ -17,7 +17,7 @@ struct Node {
 } Node;
 
 
-struct InternalNode: Node {
+typedef struct InternalNode: Node {
     Node* children[NUM_KEYS+1];
 
     /**
@@ -37,7 +37,7 @@ struct InternalNode: Node {
 } InternalNode;
 
 
-struct LeafNode: Node {
+typedef struct LeafNode: Node {
     Record* records[NUM_KEYS];
     LeafNode* next;
 } LeafNode;
