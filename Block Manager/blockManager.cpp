@@ -282,6 +282,11 @@ void BlockManager ::insertRecord(Record rec)
 {
     int ib, ir;
     float pk = bytesToFloat(rec.fgPctHomeByteArray);
+    
+    //invalid Record
+    if (pk == 0){
+        invalidRecords++;
+    }
 
     std::tie(ib, ir) = findRecordBinarySearch(pk);
 
@@ -366,3 +371,130 @@ void BlockManager ::deleteRange(BPlusTree *btree, float low, float upp)
         btree->updateIndex(f);
     }
 }
+
+void BlockManager ::linearScanKey(float keyValue1){
+
+    DataBlock current = this->getListBlocks()[0];
+    if (current.numRecords==0){
+        std::cout<< "No records" <<endl;
+    }
+
+    float avg_FG3 = 0.000;
+    Record curRec;
+    float numRec = 0;
+    float prevNum;
+    int numBlk;
+    
+    //single key query
+    for (numBlk=0; numBlk<this->getNumBlocks(); numBlk++){
+        current = this->getListBlocks()[numBlk];
+        for (int i=0; i<current.numRecords; i++){
+            prevNum = numRec;
+            curRec = current.records[i];
+            if (curRec.fgPctHomeByteArray != 0 && bytesToFloat(curRec.fgPctHomeByteArray) == keyValue1){
+                avg_FG3 += bytesToFloat(curRec.fg3PctHomeByteArray);
+                numRec++;
+            }
+            //check if the records are found finish already --> stop accessing blocks
+            if (numRec == prevNum & numRec != 0){
+                break;
+            }
+        }
+        if (numRec == prevNum & numRec != 0){
+            break;
+        }
+    }
+
+    if (numBlk==this->getNumBlocks()){
+        numBlk--;
+    }
+
+    std::cout<<"=========Brute-force Linear Search=========" <<endl;
+    std::cout << "Number of Data Blocks Access: " << numBlk+1 << endl;
+    std::cout << "Average of FG3_PCT_HOME: " << avg_FG3/numRec << endl;    
+
+}
+
+void BlockManager ::linearScanRange(float keyValue1, float keyValue2, bool lower_than){
+    DataBlock current = this->getListBlocks()[0];
+    if (current.numRecords==0){
+        std::cout<< "No records" <<endl;
+    }
+
+    float avg_FG3 = 0.000;
+    Record curRec;
+    float numRec = 0;
+    float prevNum;
+    int numBlk;
+    
+    //only 1 limit specified
+    if (keyValue2 == -1){
+        for (numBlk=0; numBlk<this->getNumBlocks(); numBlk++){
+            current = this->getListBlocks()[numBlk];
+            for (int i=0; i<current.numRecords; i++){
+                prevNum = numRec;
+                curRec = current.records[i];
+    
+                //lower than the limit, inclusive
+                if (lower_than){
+                    if (curRec.fgPctHomeByteArray != 0 && bytesToFloat(curRec.fgPctHomeByteArray) <= keyValue1){
+                        avg_FG3 += bytesToFloat(curRec.fg3PctHomeByteArray);
+                        numRec++;
+                    }
+                }else{
+                    //higher than the limit, inclusive
+                    if (curRec.fgPctHomeByteArray != 0 && bytesToFloat(curRec.fgPctHomeByteArray) >= keyValue1){
+                        avg_FG3 += bytesToFloat(curRec.fg3PctHomeByteArray);
+                        numRec++;
+                    }
+
+                }
+                
+                //check if the records are found finish already --> stop accessing blocks
+                if (numRec == prevNum & numRec != 0){
+                    break;
+                }
+            }
+            if (numRec == prevNum & numRec != 0){
+                break;
+            }
+            
+        }
+        if (numBlk==this->getNumBlocks()){
+            numBlk--;
+        }
+        std::cout<<"=========Brute-force Linear Search=========" <<endl;
+        std::cout << "Number of Data Blocks Access: " << numBlk+1 << endl;
+        std::cout << "Average of FG3_PCT_HOME: " << avg_FG3/numRec << endl; 
+
+    }else{
+        for (numBlk=0; numBlk<this->getNumBlocks(); numBlk++){
+            current = this->getListBlocks()[numBlk];
+            for (int i=0; i<current.numRecords; i++){
+                prevNum = numRec;
+                curRec = current.records[i];
+                
+                //lower than the limit, inclusive
+                if (curRec.fgPctHomeByteArray != 0 && bytesToFloat(curRec.fgPctHomeByteArray) >= keyValue1 && bytesToFloat(curRec.fgPctHomeByteArray) <= keyValue2){
+                    avg_FG3 += bytesToFloat(curRec.fg3PctHomeByteArray);
+                    numRec++;
+                }
+                if (numRec == prevNum & numRec != 0){
+                    break;
+                }
+            }
+            if (numRec == prevNum & numRec != 0){
+                break;
+            }
+        }
+        if (numBlk==this->getNumBlocks()){
+            numBlk--;
+        }
+
+        std::cout<<"=========Brute-force Linear Search=========" <<endl;
+        std::cout << "Number of Data Blocks Access: " << numBlk+1 << endl;
+        std::cout << "Average of FG3_PCT_HOME: " << avg_FG3/numRec << endl; 
+    }
+    
+}
+

@@ -34,6 +34,7 @@ class BlockManager {
         int numDataBlocks;
         int numRecords;
         DataBlock listBlocks[MAX_BLOCKS];
+        int invalidRecords;
 
         /**
          * @brief find a record given a keyValue, or the appropriate place to insert a record with the given key.
@@ -46,6 +47,7 @@ class BlockManager {
         BlockManager() {
             numDataBlocks = 0;
             numRecords = 0;
+            invalidRecords =0;
         }
 
         DataBlock* getListBlocks() {
@@ -58,6 +60,10 @@ class BlockManager {
 
         int getTotalRecords() {
             return this->numRecords;
+        }
+
+        int getInvalidRecords(){
+            return this->invalidRecords;
         }
 
         /**
@@ -110,6 +116,23 @@ class BlockManager {
          * @param upp Upper key limit
          */
        void deleteRange(BPlusTree* btree, float low, float upp);
+
+       /**
+         * @brief linear search of records for single key query
+         * 
+         * @param keyValue1 key value to be searched
+         */
+       void linearScanKey(float keyValue1);
+
+        /**
+         * @brief linear search of records for range key query
+         * 
+         * @param keyValue1 lower limit 
+         * @param keyValue2 upper limit if applicable
+         * @param lower_than if true, search will be lower or equal to keyValue1, else, search will be higher or equal to keyValue2 
+         */
+       void linearScanRange(float keyValue1,  float keyValue2 = -1, bool lower_than = false);
+
 };
 
 #endif
