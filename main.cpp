@@ -35,7 +35,7 @@ int main() {
     /**
      * Experiment 2 - Build a B+ Tree Index on "FG_PCT_home" and Report Statistics
      */
-    BPlusTree *bPlusTreePtr = NULL;
+    BPlusTree *bPlusTreePtr = (BPlusTree*) malloc(sizeof(BPlusTree));
     // Index is always built on FG_PCT_home
     blockManager.buildIndex(bPlusTreePtr);
 
