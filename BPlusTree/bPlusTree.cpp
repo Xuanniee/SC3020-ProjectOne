@@ -12,19 +12,21 @@
 #include "utils.h"
 #include "../loadData.h"
 
+using namespace std;
+
 /**
  * @brief Function to count the number of nodes in a B+ Tree
  * 
  * @param rootNode 
  * @return int 
  */
-int BPlusTree::countNodesInBPlusTree(Node* rootNode) {
+int BPlusTree::countNodesInBPlusTree(Node* rootNode, int currHeight) {
     // Base Case - Tree is Empty
     if (rootNode == NULL) {
         return 0;
     }
 
-    if (this->getHeight() == 1) {
+    if (currHeight == 1) {
         // Root Node only
         return 1;
     }
@@ -35,9 +37,9 @@ int BPlusTree::countNodesInBPlusTree(Node* rootNode) {
     int numNodes = 1;
 
     // Iterate over all the Child Nodes of the Root
-    for (int i = 0; i < rootNode->numKeysInserted; i += 1) {
+    for (int i = 0; i <= rootNode->numKeysInserted; i += 1) {
         // Add all the nodes of a child subtree
-        numNodes += countNodesInBPlusTree(internalNode->children[i]);
+        numNodes += countNodesInBPlusTree(internalNode->children[i], currHeight - 1);
     }
 
     return numNodes;
@@ -54,18 +56,20 @@ int BPlusTree::countNodesInBPlusTree(Node* rootNode) {
 int insertionSortInsertLeafNode(unsigned short int key, Record *targetRecord, int numKeysInTarget, LeafNode *targetLeafNode) {
     int currKey = key;
     Record *currRecord = targetRecord;
+    int tmpKey;
+    Record* tmpRecord;
 
     // Iterate over the array to compare the values of the key
     for (int i = 0; i < numKeysInTarget; i++) {
         // Current Key Value is Larger should be swapped.
         if (targetLeafNode->keys[i] > currKey) {
             // Swap the Keys First
-            int tmpKey = currKey;
+            tmpKey = currKey;
             currKey = targetLeafNode->keys[i];
             targetLeafNode->keys[i] = tmpKey;
 
             // Swap the Records Next
-            Record *tmpRecord = currRecord;
+            tmpRecord = currRecord;
             currRecord = targetLeafNode->records[i];
             targetLeafNode->records[i] = tmpRecord;
         }
@@ -134,13 +138,11 @@ int BPlusTree::insertKeyInTree(unsigned short int key, Record* targetRecord) {
     // Retrieve attributes of the B+ Tree
     // int heightTree = this->getHeight();
     // Node *BPlusTreeRoot = this->getRoot();
-
     // Prepare the Variables for the findRecordInTree() function
     std::stack<Node*> myStack;
     std::stack<Node*> *myStackPtr = &myStack;
     // Will retrieve the actual record, but won't be relevant in this function
     Record **recordPtr = NULL;
-
     // Search the Tree to see if the B+ tree contains the Record Key
     bool searchResult = findRecordInTree(key, myStackPtr, recordPtr);
 
@@ -151,9 +153,8 @@ int BPlusTree::insertKeyInTree(unsigned short int key, Record* targetRecord) {
     }
 
     // Retrieve the Target Leaf Node, i.e. the node where the target exist or where target is supposed to be inserted
-    LeafNode *targetLeafNode = (LeafNode*) myStackPtr->top();
+    Node *targetLeafNode = myStackPtr->top();
     myStackPtr->pop();
-    
     // If the key does not exists in tree, check if there is space
     int numKeysInTarget = targetLeafNode->numKeysInserted;
     // int numRecordsInTarget = targetLeafNode->numRecordsInserted;
@@ -161,51 +162,51 @@ int BPlusTree::insertKeyInTree(unsigned short int key, Record* targetRecord) {
     // Case 1 - Leaf Node has space to directly insert
     if (numKeysInTarget < NUM_KEYS) {
         // Insert the Record and Key
-        insertionSortInsertLeafNode(key, targetRecord, numKeysInTarget, targetLeafNode);
-
+        insertionSortInsertLeafNode(key, targetRecord, numKeysInTarget, (LeafNode*) targetLeafNode);\
         // Update the numkeys and numRecords
         targetLeafNode->numKeysInserted += 1;
         // targetLeafNode->numRecordsInserted += 1;
+        return 0;
     }
 
     // Case 2 - Leaf Node is full, has (n+1) keys now. 
     // Create a new sibling leaf node
-    LeafNode *newLeafNode = (LeafNode*) malloc(sizeof(LeafNode));
-    newLeafNode->next = NULL;
+
+    Node *newLeafNode = (Node*) malloc(sizeof(LeafNode));
+   ((LeafNode*) newLeafNode)->next = NULL;
 
     // Distribute the keys - MUST ALWAYS BE 40 else, sth is wrong
     if ((numKeysInTarget + 1) % 2 == 0) {
+
         // Even number of keys. Create a New Array to store all the (n + 1) keys since the class array cannot store
         unsigned short int combinedKeysArray[NUM_KEYS + 1];
         Record *combinedRecordsArray[NUM_KEYS + 1];
         for (int i = 0; i < numKeysInTarget; i++) {
             combinedKeysArray[i] = targetLeafNode->keys[i];
-            combinedRecordsArray[i] = targetLeafNode->records[i];
+            combinedRecordsArray[i] = ((LeafNode*)targetLeafNode)->records[i];
         }
 
         // Insert the n+1th key and sort all (n+1) keys. Okay to pass by value since don't need the arrays afterwards
         std::pair<unsigned short int*, Record**> insertionResult = insertionSortInsertArray(key, targetRecord, numKeysInTarget, combinedKeysArray, combinedRecordsArray);
         unsigned short int *insertionKeysArray = insertionResult.first;
         Record **insertionRecordsArray = insertionResult.second;
-        
         // Determine the index to start copying for the larger half for the newly created node
-        int numKeysToCopy = numKeysInTarget / 2;
-
+        int numKeysToCopy = (numKeysInTarget+1) / 2;
         // Update the Old Leaf Node, i.e. original leaf
         for (int i = 0; i < numKeysToCopy; i++) {
             // Copy the Keys over
             targetLeafNode->keys[i] = *(insertionKeysArray + i);
 
             // Copy the Record over
-            targetLeafNode->records[i] = *(insertionRecordsArray + i);
+            ((LeafNode*)targetLeafNode)->records[i] = *(insertionRecordsArray + i);
         }
 
         // Update the New Leaf Node
         int counter = 0;
-        for (int i = numKeysToCopy; i < numKeysInTarget; i++) {
+        for (int i = numKeysToCopy; i < numKeysInTarget+1; i++) {
             // New leaf should have no records, so start from 0
             newLeafNode->keys[counter] = *(insertionKeysArray + i);
-            newLeafNode->records[counter] = *(insertionRecordsArray + i);
+            ((LeafNode*) newLeafNode)->records[counter] = *(insertionRecordsArray + i);
 
             counter += 1;
         }
@@ -217,14 +218,16 @@ int BPlusTree::insertKeyInTree(unsigned short int key, Record* targetRecord) {
         // newLeafNode->numRecordsInserted = numKeysToCopy;
 
         // Update the nextLeafNode Ptr, which might point to NULL
-        LeafNode *nextLeafNode = targetLeafNode->next;
-        targetLeafNode->next = newLeafNode;
-        newLeafNode->next = nextLeafNode;
+        LeafNode *nextLeafNode = ((LeafNode*)targetLeafNode)->next;
+        ((LeafNode*)targetLeafNode)->next = (LeafNode*) newLeafNode;
+        ((LeafNode*) newLeafNode)->next = nextLeafNode;
+
     }
     else {
         // Odd Number of Keys. Original node has 1 more key and record
         // Nth happens since we will always have 40 Keys when we split
         // Should remove the if clause. But I left it here so that I will rmb what happens and can explain
+        cout << "where tf am i" << endl;
     }
 
     // Check if the Parent Node exists
@@ -248,7 +251,6 @@ int BPlusTree::insertKeyInTree(unsigned short int key, Record* targetRecord) {
             InternalNode *newParentNode = (InternalNode*) malloc(sizeof(InternalNode));
             newParentNode->numKeysInserted = 1;
             // newParentNode->parent = NULL;
-
             // Update the TWO Children Nodes. Old is Smaller
             newParentNode->children[0] = targetLeafNode;
             newParentNode->children[1] = newLeafNode;
@@ -317,13 +319,13 @@ int BPlusTree::insertKeyInTree(unsigned short int key, Record* targetRecord) {
             for (int i = numKeysLeftParent; i < (parentNode->numKeysInserted); i++) {
                 // Sibling Node starts from 0, while Parent Node starts from Middle cos larger
                 newUncleNode->keys[counter] = parentNode->keys[i];
-                newUncleNode->children[counter] = parentNode->children[i];
+                newUncleNode->children[counter+1] = parentNode->children[i+1];
 
                 counter += 1;
             }
             // Add the Last Key to the Rightmost Sibling Node {Smallest Key of New Leaf Node}
             newUncleNode->keys[counter] = newLeafNode->keys[0];
-            newUncleNode->children[counter] = newLeafNode;
+            newUncleNode->children[counter+1] = newLeafNode;
 
             // Have the Last Pointer point to NULL
             newUncleNode->children[NUM_KEYS - 1] = NULL;
@@ -337,6 +339,8 @@ int BPlusTree::insertKeyInTree(unsigned short int key, Record* targetRecord) {
             // Parent Node to Point to sibling Node
             parentNode->children[NUM_KEYS - 1] = newUncleNode;
 
+            targetLeafNode = parentNode;
+            newLeafNode = newUncleNode;
             // Update the Parent Node to be the Grandparent Node now
             if (myStackPtr->empty()) {
                 // Sets up for Case 2.1
@@ -353,7 +357,6 @@ int BPlusTree::insertKeyInTree(unsigned short int key, Record* targetRecord) {
             reachRoot = false;
         }
     } while (!reachRoot);
-
     // No issues    
     return 0;
 }
@@ -495,10 +498,14 @@ bool BPlusTree :: findRecordInTree(unsigned short int key, std::stack<Node*> *st
         }
     }
 
-    (found == true) && ((*recordPtr) = r);
+    if (found == true) {
+        if (recordPtr != NULL) {
+            (*recordPtr) = r;
+        }
+    }
 
     // Print the Number of Index Blocks Accessed
-    std::cout << "Number of Index Nodes Accessed: " << numIndexBlocks << std::endl;
+    // std::cout << "Number of Index Nodes Accessed: " << numIndexBlocks << std::endl;
     return found;
 }
 

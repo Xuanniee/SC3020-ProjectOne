@@ -35,15 +35,16 @@ int main() {
     /**
      * Experiment 2 - Build a B+ Tree Index on "FG_PCT_home" and Report Statistics
      */
-    BPlusTree *bPlusTreePtr = NULL;
+    BPlusTree bPlusTree = BPlusTree();
+    bPlusTree.setRoot(NULL);
+    bPlusTree.setHeight(0);
     // Index is always built on FG_PCT_home
-    blockManager.buildIndex(bPlusTreePtr);
+    blockManager.buildIndex(&bPlusTree);
 
     // Determine the Content of the Root Node
-    int bPlusTreeHeight = bPlusTreePtr->getHeight();
-
+    int bPlusTreeHeight = bPlusTree.getHeight();
     // Determine the Number of Nodes in the Tree
-    int numNodes = bPlusTreePtr->countNodesInBPlusTree(bPlusTreePtr->getRoot());
+    int numNodes = bPlusTree.countNodesInBPlusTree(bPlusTree.getRoot(), bPlusTree.getHeight());
     
     cout << "Experiment 2 Results:" << endl;
     cout << "========= B+ Tree Statistics =========" << endl;
@@ -51,98 +52,110 @@ int main() {
     cout << "Number of Nodes of B+ Tree: " << numNodes << endl;
     cout << "Number of Levels of the B+ Tree: " << bPlusTreeHeight << endl;
     cout << "Content of the Root Node (Only Keys): ";
-    bPlusTreePtr->printRootNodeKeys(); 
+    bPlusTree.printRootNodeKeys(); 
     cout << "." << endl;
 
-    /**
-     * Experiment 3 - Retrieve movies with "FG_PCT_home" equal to 0.5, both inclusively and report the statistics.
-     */
-    // Index Database Retrieval    
-    stack<Node*> *myStackPtr;
-    Record **recordPtr = NULL;
-    auto startIndex = std::chrono::high_resolution_clock::now();
-    bPlusTreePtr->findRecordInTree(0.5, myStackPtr, recordPtr);
-    auto endIndex = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> durationNormal = endIndex - startIndex;
+    // LeafNode* curr = (LeafNode*) ((InternalNode*) bPlusTree.getRoot())->children[0];
+
+    // int cnt = 0;
+    // while (curr != NULL) {
+    //     for (int i = 0; i < curr->numKeysInserted; i++) {
+    //         cnt++;
+    //         cout << curr->keys[i] << endl;
+    //     }
+    //     curr = curr->next;
+    // }
+    // cout << "COUNT " << cnt << endl;
+
+    // /**
+    //  * Experiment 3 - Retrieve movies with "FG_PCT_home" equal to 0.5, both inclusively and report the statistics.
+    //  */
+    // // Index Database Retrieval    
+    // stack<Node*> *myStackPtr;
+    // Record **recordPtr = NULL;
+    // auto startIndex = std::chrono::high_resolution_clock::now();
+    // bPlusTreePtr->findRecordInTree(0.5, myStackPtr, recordPtr);
+    // auto endIndex = std::chrono::high_resolution_clock::now();
+    // std::chrono::duration<double> durationNormal = endIndex - startIndex;
     
-    // Linear Scan Retrieval
-    auto startLinear = std::chrono::high_resolution_clock::now();
-    blockManager.linearScanKey(0.500);
-    // Insert Linear Scan Method
-    auto endLinear = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> durationLinear = endLinear - startLinear;
-    std::cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" <<endl;
+    // // Linear Scan Retrieval
+    // auto startLinear = std::chrono::high_resolution_clock::now();
+    // blockManager.linearScanKey(0.500);
+    // // Insert Linear Scan Method
+    // auto endLinear = std::chrono::high_resolution_clock::now();
+    // std::chrono::duration<double> durationLinear = endLinear - startLinear;
+    // std::cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" <<endl;
 
 
-    cout << "Experiment 3 Results:" << endl;
+    // cout << "Experiment 3 Results:" << endl;
     
-    cout << "Number of Data Blocks Accessed:" << endl;
-    cout << "Average of FG_PCT_home records returned:" << endl;
-    cout << "Running Time of Retrieval Process: " << durationNormal.count() << " seconds" << endl;
-    // TODO Specify Method
+    // cout << "Number of Data Blocks Accessed:" << endl;
+    // cout << "Average of FG_PCT_home records returned:" << endl;
+    // cout << "Running Time of Retrieval Process: " << durationNormal.count() << " seconds" << endl;
+    // // TODO Specify Method
 
-    // Linear will be printed inside the function
-    // cout << "Number of Data Blocks Accessed (Linear Scan):" << endl;
+    // // Linear will be printed inside the function
+    // // cout << "Number of Data Blocks Accessed (Linear Scan):" << endl;
+    // // cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
+
+    // /**
+    //  * Experiment 4 - Retrieve those movies with FG_PCT_home from 0.6 to 1, both inclusively and report statistics
+    //  */
+    // startIndex = std::chrono::high_resolution_clock::now();
+    // // Insert Ranged Query Method
+    // endIndex = std::chrono::high_resolution_clock::now();
+    // durationNormal = endIndex - startIndex;
+    
+    // // Linear Scan Retrieval
+    // startLinear = std::chrono::high_resolution_clock::now();
+    // // Insert Linear Scan Method
+    // blockManager.linearScanRange(0.600, 1);
+    // endLinear = std::chrono::high_resolution_clock::now();
+    // durationLinear = endLinear - startLinear;
+    // cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
+    
+    
+    // cout << "Experiment 4 Results:" << endl;
+    // cout << "Number of Index Nodes Accessed:" << endl;
+    // cout << "Number of Data Blocks Accessed:" << endl;
+    // cout << "Average of FG3_PCT_home of returned records:" << endl;
+    // cout << "Running Time of Retrieval Process: " << durationNormal.count() << " seconds" << endl;
+
+    // // Linear will be printed inside the function
+    // // cout << "Number of Data Blocks Accessed (Linear Scan):" << endl;
+    // // cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
+
+    // /**
+    //  * Experiment 5 - Delete movies with FG_PCT_home <= 0.35, update B+ Tree and report statistics
+    //  */
+    // startIndex = std::chrono::high_resolution_clock::now();
+    // // Delete and Update B+ Tree Function
+    // endIndex = std::chrono::high_resolution_clock::now();
+    // durationNormal = endIndex - startIndex;
+    
+    // // Linear Scan Retrieval
+    // startLinear = std::chrono::high_resolution_clock::now();
+    // // Insert Linear Scan Method
+    // blockManager.linearScanRange(0.35, -1, true);
+    // endLinear = std::chrono::high_resolution_clock::now();
+    // durationLinear = endLinear - startLinear;
     // cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
 
-    /**
-     * Experiment 4 - Retrieve those movies with FG_PCT_home from 0.6 to 1, both inclusively and report statistics
-     */
-    startIndex = std::chrono::high_resolution_clock::now();
-    // Insert Ranged Query Method
-    endIndex = std::chrono::high_resolution_clock::now();
-    durationNormal = endIndex - startIndex;
-    
-    // Linear Scan Retrieval
-    startLinear = std::chrono::high_resolution_clock::now();
-    // Insert Linear Scan Method
-    blockManager.linearScanRange(0.600, 1);
-    endLinear = std::chrono::high_resolution_clock::now();
-    durationLinear = endLinear - startLinear;
-    cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
-    
-    
-    cout << "Experiment 4 Results:" << endl;
-    cout << "Number of Index Nodes Accessed:" << endl;
-    cout << "Number of Data Blocks Accessed:" << endl;
-    cout << "Average of FG3_PCT_home of returned records:" << endl;
-    cout << "Running Time of Retrieval Process: " << durationNormal.count() << " seconds" << endl;
 
-    // Linear will be printed inside the function
-    // cout << "Number of Data Blocks Accessed (Linear Scan):" << endl;
-    // cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
+    // // Updated Nodes and Height
+    // bPlusTreeHeight = bPlusTreePtr->getHeight();
+    // numNodes = bPlusTreePtr->countNodesInBPlusTree(bPlusTreePtr->getRoot());
 
-    /**
-     * Experiment 5 - Delete movies with FG_PCT_home <= 0.35, update B+ Tree and report statistics
-     */
-    startIndex = std::chrono::high_resolution_clock::now();
-    // Delete and Update B+ Tree Function
-    endIndex = std::chrono::high_resolution_clock::now();
-    durationNormal = endIndex - startIndex;
-    
-    // Linear Scan Retrieval
-    startLinear = std::chrono::high_resolution_clock::now();
-    // Insert Linear Scan Method
-    blockManager.linearScanRange(0.35, -1, true);
-    endLinear = std::chrono::high_resolution_clock::now();
-    durationLinear = endLinear - startLinear;
-    cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
-
-
-    // Updated Nodes and Height
-    bPlusTreeHeight = bPlusTreePtr->getHeight();
-    numNodes = bPlusTreePtr->countNodesInBPlusTree(bPlusTreePtr->getRoot());
-
-    cout << "========= B+ Tree Statistics =========" << endl;
-    cout << "Number of Nodes of Updated B+ Tree: " << numNodes << endl;
-    cout << "Number of Levels of the Updated B+ Tree: " << bPlusTreeHeight << endl;
-    cout << "Content of the Root Node (Only Keys): ";
-    bPlusTreePtr->printRootNodeKeys(); 
-    cout << "." << endl;
-    cout << "Running Time of Retrieval Process: " << durationNormal.count() << " seconds" << endl;
-    // Linear will be printed inside the function
-    // cout << "Number of Data Blocks Accessed (Linear Scan):" << endl;
-    // cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
+    // cout << "========= B+ Tree Statistics =========" << endl;
+    // cout << "Number of Nodes of Updated B+ Tree: " << numNodes << endl;
+    // cout << "Number of Levels of the Updated B+ Tree: " << bPlusTreeHeight << endl;
+    // cout << "Content of the Root Node (Only Keys): ";
+    // bPlusTreePtr->printRootNodeKeys(); 
+    // cout << "." << endl;
+    // cout << "Running Time of Retrieval Process: " << durationNormal.count() << " seconds" << endl;
+    // // Linear will be printed inside the function
+    // // cout << "Number of Data Blocks Accessed (Linear Scan):" << endl;
+    // // cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
 
     return 0;
 }
