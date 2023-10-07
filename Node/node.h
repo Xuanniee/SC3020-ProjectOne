@@ -10,7 +10,7 @@
 
 typedef struct Node {
     // Given the size of the key and the size of a pointer, the number of keys/pointers should be 39
-    float keys[NUM_KEYS];
+    unsigned short int keys[NUM_KEYS];
     int numKeysInserted;
 
     virtual ~Node() {};

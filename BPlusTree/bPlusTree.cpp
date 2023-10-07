@@ -50,7 +50,7 @@ int BPlusTree::countNodesInBPlusTree(Node* rootNode) {
  * @param targetRecord 
  * @return int 
  */
-int insertionSortInsertLeafNode(float key, Record *targetRecord, int numKeysInTarget, LeafNode *targetLeafNode) {
+int insertionSortInsertLeafNode(unsigned short int key, Record *targetRecord, int numKeysInTarget, LeafNode *targetLeafNode) {
     int currKey = key;
     Record *currRecord = targetRecord;
 
@@ -92,7 +92,7 @@ int insertionSortInsertLeafNode(float key, Record *targetRecord, int numKeysInTa
  * @param combinedRecordsArray 
  * @return std::pair<float*, Record**> 
  */
-std::pair<float*, Record**> insertionSortInsertArray(float key, Record *targetRecord, int numKeysInTarget, float combinedKeysArray[]
+std::pair<unsigned short int*, Record**> insertionSortInsertArray(unsigned short int key, Record *targetRecord, int numKeysInTarget, unsigned short int combinedKeysArray[]
 , Record *combinedRecordsArray[]) {
     int currKey = key;
     Record *currRecord = targetRecord;
@@ -129,7 +129,7 @@ std::pair<float*, Record**> insertionSortInsertArray(float key, Record *targetRe
  * @param targetRecord 
  * @return 0 if there is nothing wrong 
  */
-int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
+int BPlusTree::insertKeyInTree(unsigned short int key, Record* targetRecord) {
     // Retrieve attributes of the B+ Tree
     // int heightTree = this->getHeight();
     // Node *BPlusTreeRoot = this->getRoot();
@@ -175,7 +175,7 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
     // Distribute the keys - MUST ALWAYS BE 40 else, sth is wrong
     if ((numKeysInTarget + 1) % 2 == 0) {
         // Even number of keys. Create a New Array to store all the (n + 1) keys since the class array cannot store
-        float combinedKeysArray[NUM_KEYS + 1];
+        unsigned short int combinedKeysArray[NUM_KEYS + 1];
         Record *combinedRecordsArray[NUM_KEYS + 1];
         for (int i = 0; i < numKeysInTarget; i++) {
             combinedKeysArray[i] = targetLeafNode->keys[i];
@@ -183,8 +183,8 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
         }
 
         // Insert the n+1th key and sort all (n+1) keys. Okay to pass by value since don't need the arrays afterwards
-        std::pair<float*, Record**> insertionResult = insertionSortInsertArray(key, targetRecord, numKeysInTarget, combinedKeysArray, combinedRecordsArray);
-        float *insertionKeysArray = insertionResult.first;
+        std::pair<unsigned short int*, Record**> insertionResult = insertionSortInsertArray(key, targetRecord, numKeysInTarget, combinedKeysArray, combinedRecordsArray);
+        unsigned short int *insertionKeysArray = insertionResult.first;
         Record **insertionRecordsArray = insertionResult.second;
         
         // Determine the index to start copying for the larger half for the newly created node
@@ -271,7 +271,7 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
             
             // TBH Not very sure of this
             // New Key to be inserted is the largest value since parent keys are already sorted
-            float newKey = newLeafNode->keys[0];
+            unsigned short int newKey = newLeafNode->keys[0];
 
             // Cannot update the numKeys until we insert the new key
             parentNode->keys[parentNode->numKeysInserted] = newKey;
@@ -463,7 +463,7 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
 
 // }
 
-bool BPlusTree :: findRecordInTree(float key, std::stack<Node*> *stackPtr, Record **recordPtr) {
+bool BPlusTree :: findRecordInTree(unsigned short int key, std::stack<Node*> *stackPtr, Record **recordPtr) {
     int numIndexBlocks = 1;
     stackPtr->push(root);
     // INCREMENT LOAD COUNTER
@@ -502,12 +502,12 @@ bool BPlusTree :: findRecordInTree(float key, std::stack<Node*> *stackPtr, Recor
 }
 
 
-std::vector<std::pair<Node*, int> > BPlusTree :: _ancestry(float key) {
+std::vector<std::pair<Node*, int> > BPlusTree :: _ancestry(unsigned short int key) {
 
     std::vector<std::pair<Node*, int> > res;
     Node* curr = root;
     int _, i;
-    float *keys;
+    unsigned short int *keys;
 
     // internal nodes
     for (_=1; _<height; _++) {
@@ -535,14 +535,14 @@ void _shift(LeafNode* node, int src, int dir) {
     int n = (dir==1 ? node->numKeysInserted++ : node->numKeysInserted--) - src;
     if (!n || src+dir<0) return;
     std::memcpy(node->records+src+dir, node->records+src, n*sizeof(Record*));
-    std::memcpy(node->keys+src+dir, node->keys+src, n*sizeof(float)); 
+    std::memcpy(node->keys+src+dir, node->keys+src, n*sizeof(unsigned short int)); 
 }
 
 
 void _shift(InternalNode* node, int src, int dir) {
     int n = (dir==1 ? node->numKeysInserted++ : node->numKeysInserted--) - src;
     if (n>=0) std::memcpy(node->children+src+dir, node->children+src, (n+1)*sizeof(Record*));
-    if (n>0) std::memcpy(node->keys+src+dir, node->keys+src, n*sizeof(float)); 
+    if (n>0) std::memcpy(node->keys+src+dir, node->keys+src, n*sizeof(unsigned short int)); 
 }
 
 
@@ -562,7 +562,7 @@ int _leafSibling(InternalNode* parent, int offset) {
 }
 
 
-void _updateFirstLeft( std::vector<std::pair<Node*, int> > st, float key) {
+void _updateFirstLeft( std::vector<std::pair<Node*, int> > st, unsigned short int key) {
     // update first left parent's key
     for (int i=st.size()-1; i>=0; i--) {
         if (st[i].second > 0) {
@@ -646,7 +646,7 @@ void BPlusTree :: _updateUpstream(Node*, std::vector<std::pair<Node*, int> > st)
 }
 
 
-void BPlusTree :: updateIndex(float deletedKey) {
+void BPlusTree :: updateIndex(unsigned short int deletedKey) {
 
     std::vector<std::pair<Node*, int> > st = _ancestry(deletedKey);
 
@@ -730,7 +730,7 @@ void BPlusTree :: print() {
     std::queue<std::queue<Node*> > next;
     std::queue<Node*> temp;
     std::queue<Node*> temp2;
-    float* keys;
+    unsigned short int* keys;
     Node** children;
     Node* child;
     int i;
@@ -788,7 +788,7 @@ void BPlusTree :: print() {
     std::cout<<std::endl;
 }
 
-std::pair<Record*, Record*> BPlusTree :: findRecordsInRange(float key1, float key2) {
+std::pair<Record*, Record*> BPlusTree :: findRecordsInRange(unsigned short int key1, unsigned short int key2) {
     Node* curr = root;
     Node* prev;
     // INCREMENT LOAD COUNTER

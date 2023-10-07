@@ -70,7 +70,7 @@ class BPlusTree {
          * @param recordPtr -- pointer to the pointer to a record
          * @return bool -- whether the record has been found
          */
-        bool findRecordInTree(float key, std::stack<Node*> *stackPtr, Record **recordPtr);
+        bool findRecordInTree(unsigned short int key, std::stack<Node*> *stackPtr, Record **recordPtr);
 
         /**
          * @brief find all records with key values between key1 and key2, inclusive
@@ -79,14 +79,14 @@ class BPlusTree {
          * @param key2 
          * @return the start and end pointers for range query within blockManager 
          */
-        std::pair<Record*, Record*> findRecordsInRange(float key1, float key2);
+        std::pair<Record*, Record*> findRecordsInRange(unsigned short int key1, unsigned short int key2);
 
         /**
          * @brief Insert a key into the index
          * 
          * @param key 
          */
-        int insertKeyInTree(float key, Record* targetRecord);
+        int insertKeyInTree(unsigned short int key, Record* targetRecord);
 
         /**
          * @brief Find a node with specified key and return its ancestry
@@ -95,7 +95,7 @@ class BPlusTree {
          * 
          * @return Stack containing pairs of parent nodes and key offset
         */
-        std::vector<std::pair<Node*, int> > _ancestry(float key);
+        std::vector<std::pair<Node*, int> > _ancestry(unsigned short int key);
 
         /**
          * @brief Recursively update upstream internal nodes
@@ -109,7 +109,7 @@ class BPlusTree {
          * 
          * @param deletedKey
          */
-        void updateIndex(float deletedKey);
+        void updateIndex(unsigned short int deletedKey);
         
         /**
          * @brief Print tree to console. Temp function used for testing. To be removed
@@ -132,7 +132,7 @@ class BPlusTree {
  * @param st Ancestry stack
  * @param key Smallest key value
 */
-void _updateFirstLeft( std::vector<std::pair<Node*, int> > st, float key);
+void _updateFirstLeft( std::vector<std::pair<Node*, int> > st, unsigned short int key);
 
 
 /**

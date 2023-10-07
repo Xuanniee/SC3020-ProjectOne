@@ -336,7 +336,7 @@ void BlockManager ::deleteRange(BPlusTree *btree, float low, float upp)
     LeafNode* leaf;
     Record* rst;
     Record* rend;
-    float *keys;
+    unsigned short int *keys;
     int i;
 
     for (int _ = 1; _ < btree->getHeight(); _++) {
