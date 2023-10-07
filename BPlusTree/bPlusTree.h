@@ -109,7 +109,7 @@ class BPlusTree {
          * 
          * @param deletedKey
          */
-        void updateIndex(unsigned short int deletedKey);
+        Record* updateIndex(unsigned short int deletedKey);
         
         /**
          * @brief Print tree to console. Temp function used for testing. To be removed
