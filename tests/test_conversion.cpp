@@ -2,7 +2,7 @@
 #include "../loadData.h"
 
 
-bool test_date_to_bytes() {
+void test_date_to_bytes() {
     short bytes;
     std::string odate, idate;
     
@@ -18,11 +18,43 @@ bool test_date_to_bytes() {
 }
 
 
+void test_float_to_bytes() {
+    short bytes;
+    float ifloat, ofloat;
+
+    ifloat = 0.0;
+    bytes = floatToBytes(ifloat);
+    ofloat = bytesToFloat(bytes);
+    std::cout << (ifloat == ofloat ? "[PASSED]" : "[FAILED]") << " assert "<< ifloat << " == " << ofloat << std::endl;
+
+    ifloat = 0.499;
+    bytes = floatToBytes(ifloat);
+    ofloat = bytesToFloat(bytes);
+    std::cout << (ifloat == ofloat ? "[PASSED]" : "[FAILED]") << " assert "<< ifloat << " == " << ofloat << std::endl;
+
+    ifloat = 0.511;
+    bytes = floatToBytes(ifloat);
+    ofloat = bytesToFloat(bytes);
+    std::cout << (ifloat == ofloat ? "[PASSED]" : "[FAILED]") << " assert "<< ifloat << " == " << ofloat << std::endl;
+
+    ifloat = 0.501;
+    bytes = floatToBytes(ifloat);
+    ofloat = bytesToFloat(bytes);
+    std::cout << (ifloat == ofloat ? "[PASSED]" : "[FAILED]") << " assert "<< ifloat << " == " << ofloat << std::endl;
+
+    ifloat = 2.0;
+    bytes = floatToBytes(ifloat);
+    ofloat = bytesToFloat(bytes);
+    std::cout << (ifloat == ofloat ? "[PASSED]" : "[FAILED]") << " assert "<< ifloat << " == " << ofloat << std::endl;
+}
+
+
 /**
  * @brief Run all tests
 */
 void test_conversion() {
-    test_date_to_bytes();
+    // test_date_to_bytes();
+    test_float_to_bytes();
 }
 
 //g++ test.cpp loadData.cpp -o test; .\test
