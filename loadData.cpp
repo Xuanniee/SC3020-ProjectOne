@@ -21,28 +21,65 @@ int bytesToHome(unsigned char num){
     return out;
 }
 
-unsigned short int floatToBytes(double num){
-    //at most 3 s.f. 
-    unsigned short int bytes;
-    // First bit indicates if 1 or 0. Remaining 7 bits are for decimal. (2B)
-    if (num>=1){
-        num = num-1;
-        num = num*1000 + pow(2, 15); // put the MSB as 1 if the before decimal is 1
-    }else{
-        num = num*1000;
+// unsigned short int floatToBytes(double num){
+//     //at most 3 s.f. 
+//     unsigned short int bytes;
+//     // First bit indicates if 1 or 0. Remaining 7 bits are for decimal. (2B)
+//     if (num>=1){
+//         num = num-1;
+//         num = num*1000 + pow(2, 15); // put the MSB as 1 if the before decimal is 1
+//     }else{
+//         num = num*1000;
+//     }
+//     bytes = static_cast<unsigned short int>(num);
+//     return bytes;
+// }
+
+// float bytesToFloat(unsigned short int num){
+//     float out =0 ;
+//     if (num >=32768){
+//         num -= 32768;
+//         out += 1;
+//     }
+//     out = out + static_cast<float>(num)/1000;
+//     return out;
+// }
+
+unsigned short int floatToBytes(double num) {
+    // Convert to an integer by multiplying by 1000 and adding 0.5 for rounding.
+    int intPart = static_cast<int>(num * 1000 + 0.5);
+
+    // Set the MSB to 1 if the number is greater than or equal to 1.
+    if (num >= 1) {
+        intPart |= 0x8000; // Set the most significant bit to 1.
     }
-    bytes = static_cast<unsigned short int>(num);
-    return bytes;
+
+    // Ensure the value is within the bounds of an unsigned short int.
+    if (intPart < 0) {
+        intPart = 0;
+    } else if (intPart > 0xFFFF) {
+        intPart = 0xFFFF;
+    }
+
+    return static_cast<unsigned short int>(intPart);
 }
 
-float bytesToFloat(unsigned short int num){
-    float out =0 ;
-    if (num >=32768){
-        num -= 32768;
-        out += 1;
+float bytesToFloat(unsigned short int num) {
+    // Check if the most significant bit is set (indicating a value >= 1).
+    bool isGreaterThanEqualOne = ((num & 0x8000) != 0);
+
+    // Clear the most significant bit.
+    num &= 0x7FFF;
+
+    // Convert to a floating-point number and divide by 1000.
+    float result = static_cast<float>(num) / 1000.0f;
+
+    // Add 1 if the original number was >= 1.
+    if (isGreaterThanEqualOne) {
+        result += 1.0f;
     }
-    out = out + static_cast<float>(num)/1000;
-    return out;
+
+    return result;
 }
 
 short int dateToBytes(string date){

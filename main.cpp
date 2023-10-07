@@ -7,6 +7,7 @@
 #include "./Block Manager/blockManager.h"
 #include "./BPlusTree/bPlusTree.h"
 #include "./Node/node.h"
+#include "./BPlusTree/utils.h"
 
 using namespace std;
 
@@ -198,8 +199,6 @@ int main() {
     blockManager.deleteRange(&bPlusTree, 0, 0.35);
     endIndex = std::chrono::high_resolution_clock::now();
     durationNormal = endIndex - startIndex;
-
-    
 
     // Updated Nodes and Height
     bPlusTreeHeight = bPlusTree.getHeight();
