@@ -1,4 +1,5 @@
-CC = g++
+# CC = g++
+CC = x86_64-w64-mingw32-g++
 CFLAGS = -Wall -g -std=c++17
 
 main: main.o blockManager.o bPlusTree.o node.o loadData.o utils.o
