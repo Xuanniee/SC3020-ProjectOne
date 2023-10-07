@@ -334,15 +334,14 @@ void BlockManager ::deleteRange(BPlusTree *btree, float low, float upp)
     Record** recs;
     vector<float> to_del;
     LeafNode* leaf;
-    Record* rst;
-    Record* rend;
     unsigned short int *keys;
+    unsigned short int ulow = floatToBytes(low), uupp = floatToBytes(upp);
     int i;
 
     for (int _ = 1; _ < btree->getHeight(); _++) {
         keys = curr->keys;
         for (i = 0; i < curr->numKeysInserted; i++) {
-            if (keys[i] > low) break;
+            if (keys[i] > ulow) break;
         }
         curr = ((InternalNode *)curr)->children[i];
     }
@@ -351,7 +350,7 @@ void BlockManager ::deleteRange(BPlusTree *btree, float low, float upp)
     leaf = (LeafNode*) curr;
     keys = curr->keys;
     for (i = 0; i < curr->numKeysInserted; i++) {
-        if (keys[i] >= low) break;
+        if (keys[i] >= ulow) break;
     }
 
     // acquire all keys to be deleted
@@ -359,15 +358,15 @@ void BlockManager ::deleteRange(BPlusTree *btree, float low, float upp)
         keys = leaf->keys;
         recs = leaf->records;
 
-        for (i=0; i<leaf->numKeysInserted; i++) {
-            if (keys[i] <=  upp) to_del.push_back(keys[i]);
+        for (i = 0; i < leaf->numKeysInserted; i++) {
+            if (keys[i] <=  uupp) to_del.push_back(keys[i]);
             else break;         
         }
         leaf = leaf->next;
     }
 
     // update index
-    for (float f : to_del) {
+    for (unsigned short int f : to_del) {
         btree->updateIndex(f);
     }
 }

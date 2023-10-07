@@ -45,85 +45,85 @@ void test_del_1() {
     Record* r15 = new Record();
     Record* r16 = new Record();
 
-    a1->keys[0] = 9;
+    a1->keys[0] = floatToBytes(9);
     a1->numKeysInserted = 1;
     a1->children[0] = b1;
     a1->children[1] = b2;
 
-    b1->keys[0] = 5;
+    b1->keys[0] = floatToBytes(5);
     b1->numKeysInserted=1;
     b1->children[0] = c1;
     b1->children[1] = c2;
 
-    b2->keys[0] = 13;
+    b2->keys[0] = floatToBytes(13);
     b2->numKeysInserted=1;
     b2->children[0] = c3;
     b2->children[1] = c4;
 
-    c1->keys[0] = 3;
+    c1->keys[0] = floatToBytes(3);
     c1->numKeysInserted=1;
     c1->children[0] = d1;
     c1->children[1] = d2;
 
-    c2->keys[0] = 7;
+    c2->keys[0] = floatToBytes(7);
     c2->numKeysInserted=1;
     c2->children[0] = d3;
     c2->children[1] = d4;
 
-    c3->keys[0] = 11;
+    c3->keys[0] = floatToBytes(11);
     c3->numKeysInserted=1;
     c3->children[0] = d5;
     c3->children[1] = d6;
 
-    c4->keys[0] = 15;
+    c4->keys[0] = floatToBytes(15);
     c4->numKeysInserted=1;
     c4->children[0] = d7;
     c4->children[1] = d8;
 
-    d1->keys[0] = 1;
-    d1->keys[1] = 2;
+    d1->keys[0] = floatToBytes(1);
+    d1->keys[1] = floatToBytes(2);
     d1->numKeysInserted = 2;
     d1->records[0] = r1;
     d1->records[1] = r2;
 
-    d2->keys[0] = 3;
-    d2->keys[1] = 4;
+    d2->keys[0] = floatToBytes(3);
+    d2->keys[1] = floatToBytes(4);
     d2->numKeysInserted = 2;
     d2->records[0] = r3;
     d2->records[1] = r4;
 
-    d3->keys[0] = 5;
-    d3->keys[1] = 6;
+    d3->keys[0] = floatToBytes(5);
+    d3->keys[1] = floatToBytes(6);
     d3->numKeysInserted = 2;
     d3->records[0] = r5;
     d3->records[1] = r6;
 
-    d4->keys[0] = 7;
-    d4->keys[1] = 8;
+    d4->keys[0] = floatToBytes(7);
+    d4->keys[1] = floatToBytes(8);
     d4->numKeysInserted = 2;
     d4->records[0] = r7;
     d4->records[1] = r8;
 
-    d5->keys[0] = 9;
-    d5->keys[1] = 10;
+    d5->keys[0] = floatToBytes(9);
+    d5->keys[1] = floatToBytes(10);
     d5->numKeysInserted = 2;
     d5->records[0] = r9;
     d5->records[1] = r10;
 
-    d6->keys[0] = 11;
-    d6->keys[1] = 12;
+    d6->keys[0] = floatToBytes(11);
+    d6->keys[1] = floatToBytes(12);
     d6->numKeysInserted = 2;
     d6->records[0] = r11;
     d6->records[1] = r12;
 
-    d7->keys[0] = 13;
-    d7->keys[1] = 14;
+    d7->keys[0] = floatToBytes(13);
+    d7->keys[1] = floatToBytes(14);
     d7->numKeysInserted = 2;
     d7->records[0] = r13;
     d7->records[1] = r14;
 
-    d8->keys[0] = 15;
-    d8->keys[1] = 16;
+    d8->keys[0] = floatToBytes(15);
+    d8->keys[1] = floatToBytes(16);
     d8->numKeysInserted = 2;
     d8->records[0] = r15;
     d8->records[1] = r16;
@@ -151,14 +151,15 @@ void test_del_1() {
     r13->fg3PctHomeByteArray = floatToBytes(13.0f);
     r14->fg3PctHomeByteArray = floatToBytes(14.0f);
     r15->fg3PctHomeByteArray = floatToBytes(15.0f);
-    r16->fg3PctHomeByteArray = floatToBytes(16.0f);
+    r16->fg3PctHomeByteArray = floatToBytes(16.0);
 
     bt->setRoot(a1);
     bt->setHeight(4);
 
     BlockManager* bm = new BlockManager();
-    bm->deleteRange(bt, 0,3);
-    bm->deleteRange(bt, 9,13);
+
+    bm->deleteRange(bt, 0.0f,3.0f);
+    bm->deleteRange(bt, 9.0f, 13.0f);
     bt->print();
 
     free(a1);
@@ -225,60 +226,60 @@ void test_del_2() {
     Record* r11 = new Record();
     Record* r12 = new Record();
 
-    a1->keys[0] = 6;
-    a1->keys[1] = 10;
+    a1->keys[0] = floatToBytes(6);
+    a1->keys[1] = floatToBytes(10);
     a1->numKeysInserted = 2;
     a1->children[0] = b1;
     a1->children[1] = b2;
     a1->children[2] = b3;
 
-    b1->keys[0] = 4;
+    b1->keys[0] = floatToBytes(4);
     b1->numKeysInserted=1;
     b1->children[0] = c1;
     b1->children[1] = c2;
 
-    b2->keys[0] = 8;
+    b2->keys[0] = floatToBytes(8);
     b2->numKeysInserted=1;
     b2->children[0] = c3;
     b2->children[1] = c4;
 
-    b3->keys[0] = 12;
+    b3->keys[0] = floatToBytes(12);
     b3->numKeysInserted=1;
     b3->children[0] = c5;
     b3->children[1] = c6;
 
-    c1->keys[0] = 1;
-    c1->keys[1] = 2;
+    c1->keys[0] = floatToBytes(1);
+    c1->keys[1] = floatToBytes(2);
     c1->numKeysInserted=2;
     c1->records[0] = r1;
     c1->records[1] = r2;
 
-    c2->keys[0] = 4;
-    c2->keys[1] = 5;
+    c2->keys[0] = floatToBytes(4);
+    c2->keys[1] = floatToBytes(5);
     c2->numKeysInserted=2;
     c2->records[0] = r3;
     c2->records[1] = r4;
 
-    c3->keys[0] = 6;
-    c3->keys[1] = 7;
+    c3->keys[0] = floatToBytes(6);
+    c3->keys[1] = floatToBytes(7);
     c3->numKeysInserted=2;
     c3->records[0] = r5;
     c3->records[1] = r6;
 
-    c4->keys[0] = 8;
-    c4->keys[1] = 9;
+    c4->keys[0] = floatToBytes(8);
+    c4->keys[1] = floatToBytes(9);
     c4->numKeysInserted=2;
     c4->records[0] = r7;
     c4->records[1] = r8;
 
-    c5->keys[0] = 10;
-    c5->keys[1] = 11;
+    c5->keys[0] = floatToBytes(10);
+    c5->keys[1] = floatToBytes(11);
     c5->numKeysInserted=2;
     c5->records[0] = r9;
     c5->records[1] = r10;
 
-    c6->keys[0] = 12;
-    c6->keys[1] = 13;
+    c6->keys[0] = floatToBytes(12);
+    c6->keys[1] = floatToBytes(13);
     c6->numKeysInserted=2;
     c6->records[0] = r11;
     c6->records[1] = r12;
@@ -298,8 +299,8 @@ void test_del_2() {
 
     bt->setRoot(a1);
     bt->setHeight(3);
-    bt->updateIndex(4);
-    bt->updateIndex(13);
+    bt->updateIndex(floatToBytes(4));
+    bt->updateIndex(floatToBytes(13));
     bt->print();
 
     free(a1);
@@ -329,6 +330,29 @@ void test_del_2() {
 
 
 void test_deletion() {
-    // test_del_1();
+    /**
+     * ----- Test 1 -----
+     * 
+     * Set Node/node.h NUM_KEYS 2
+     * 
+     * Expected:
+     * 
+     * [ (7,14,) ] 
+     * [ (5,) (8,) (15,) ]
+     * [ (4,) (5,6,) ] [ (7,) (8,) ] [ (14,) (15,16,) ]
+    */
+    test_del_1();
+
+    /**
+     * ----- Test 2 -----
+     * 
+     * Set Node/node.h NUM_KEYS 3
+     * 
+     * Expected:
+     * 
+     * [ (8,) ] 
+     * [ (6,) (10,) ]
+     * [ (1,2,5,) (6,7,) ] [ (8,9,) (10,11,12,) ]
+    */
     test_del_2();
 }

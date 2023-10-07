@@ -592,7 +592,6 @@ void BPlusTree :: _updateUpstream(Node*, std::vector<std::pair<Node*, int> > st)
 
 
 void BPlusTree :: updateIndex(unsigned short int deletedKey) {
-
     std::vector<std::pair<Node*, int> > st = _ancestry(deletedKey);
 
     if (st.empty()) return;
@@ -698,7 +697,7 @@ void BPlusTree :: print() {
                 std::cout << "(";
 
                 for (i = 0; i<child->numKeysInserted; i++) {
-                    std::cout << keys[i] << ",";
+                    std::cout << bytesToFloat(keys[i]) << ",";
                     temp2.push(children[i]);
                 }
                 temp2.push(children[i]);
@@ -724,7 +723,7 @@ void BPlusTree :: print() {
 
             std::cout << "(";
             for (i=0; i<child->numKeysInserted; i++) {
-                std::cout << keys[i] << ",";
+                std::cout << bytesToFloat(keys[i]) << ",";
             }
             std::cout << ") ";
         }
