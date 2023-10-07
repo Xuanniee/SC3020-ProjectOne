@@ -166,6 +166,7 @@ int BPlusTree::insertKeyInTree(unsigned short int key, Record* targetRecord) {
         // Update the numkeys and numRecords
         targetLeafNode->numKeysInserted += 1;
         // targetLeafNode->numRecordsInserted += 1;
+        return 0;
     }
 
     // Case 2 - Leaf Node is full, has (n+1) keys now. 
