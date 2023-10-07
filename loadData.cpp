@@ -92,7 +92,6 @@ short int dateToBytes(string date){
     }
     else
     {
-        cout << "Parse failed\n";
         return 0;
     }
 }
