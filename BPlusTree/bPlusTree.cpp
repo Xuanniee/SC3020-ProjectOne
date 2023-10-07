@@ -9,7 +9,38 @@
 #include <vector>
 #include <tuple>
 #include "bPlusTree.h"
+#include "../loadData.h"
 
+/**
+ * @brief Function to count the number of nodes in a B+ Tree
+ * 
+ * @param rootNode 
+ * @return int 
+ */
+int BPlusTree::countNodesInBPlusTree(Node* rootNode) {
+    // Base Case - Tree is Empty
+    if (rootNode == NULL) {
+        return 0;
+    }
+
+    if (this->getHeight() == 1) {
+        // Root Node only
+        return 1;
+    }
+    // Any other scenario must be an internal node
+    InternalNode *internalNode = (InternalNode*) rootNode;
+
+    // Initialise as at least Root exists
+    int numNodes = 1;
+
+    // Iterate over all the Child Nodes of the Root
+    for (int i = 0; i < rootNode->numKeysInserted; i += 1) {
+        // Add all the nodes of a child subtree
+        numNodes += countNodesInBPlusTree(internalNode->children[i]);
+    }
+
+    return numNodes;
+}
 
 /**
  * @brief Helper Function for insertKeyInTree(). Needs a way to insert new keys or records
@@ -100,14 +131,14 @@ std::pair<float*, Record**> insertionSortInsertArray(float key, Record *targetRe
  */
 int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
     // Retrieve attributes of the B+ Tree
-    int heightTree = this->getHeight();
-    Node *BPlusTreeRoot = this->getRoot();
+    // int heightTree = this->getHeight();
+    // Node *BPlusTreeRoot = this->getRoot();
 
     // Prepare the Variables for the findRecordInTree() function
     std::stack<Node*> myStack;
     std::stack<Node*> *myStackPtr = &myStack;
     // Will retrieve the actual record, but won't be relevant in this function
-    Record **recordPtr;
+    Record **recordPtr = NULL;
 
     // Search the Tree to see if the B+ tree contains the Record Key
     bool searchResult = findRecordInTree(key, myStackPtr, recordPtr);
@@ -214,7 +245,6 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
         if (parentNode == NULL) {
             // Create a New Parent Node
             InternalNode *newParentNode = (InternalNode*) malloc(sizeof(InternalNode));
-            newParentNode->numChildrenNodes = 2;
             newParentNode->numKeysInserted = 1;
             // newParentNode->parent = NULL;
 
@@ -245,11 +275,11 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
 
             // Cannot update the numKeys until we insert the new key
             parentNode->keys[parentNode->numKeysInserted] = newKey;
-            parentNode->children[parentNode->numChildrenNodes] = newLeafNode;
+            // Num Children Nodes is always numKeys + 1
+            parentNode->children[parentNode->numKeysInserted + 1] = newLeafNode;
 
             // Update the Number of Keys Inserted
             parentNode->numKeysInserted += 1;
-            parentNode->numChildrenNodes += 1;
 
             // Don't need update parent, end process
             reachRoot = true;
@@ -298,11 +328,9 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
             newUncleNode->children[NUM_KEYS - 1] = NULL;
 
             // Update Attributes for Uncle Node (On the Right)
-            newUncleNode->numChildrenNodes = numKeysRightParent;
             newUncleNode->numKeysInserted = numKeysRightParent;
 
             // Update Attributes for Original Parent Node (On the Left)
-            parentNode->numChildrenNodes = numKeysLeftParent;
             parentNode->numKeysInserted = numKeysLeftParent;
 
             // Parent Node to Point to sibling Node
@@ -436,7 +464,7 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
 // }
 
 bool BPlusTree :: findRecordInTree(float key, std::stack<Node*> *stackPtr, Record **recordPtr) {
-    
+    int numIndexBlocks = 1;
     stackPtr->push(root);
     // INCREMENT LOAD COUNTER
     Node* next = NULL;
@@ -454,6 +482,7 @@ bool BPlusTree :: findRecordInTree(float key, std::stack<Node*> *stackPtr, Recor
         // If next hasn't been assigned, means it refers to the last node pointer
         (next == NULL) && (next = ((InternalNode*) stackPtr->top())->children[stackPtr->top()->numKeysInserted]); // INCREMENT LOAD COUNTER
         stackPtr->push(next);
+        numIndexBlocks += 1;
         next = NULL;
     }
 
@@ -467,6 +496,8 @@ bool BPlusTree :: findRecordInTree(float key, std::stack<Node*> *stackPtr, Recor
 
     (found == true) && ((*recordPtr) = r);
 
+    // Print the Number of Index Blocks Accessed
+    std::cout << "Number of Index Nodes Accessed: " << numIndexBlocks << std::endl;
     return found;
 }
 
@@ -571,18 +602,27 @@ void BPlusTree :: _updateUpstream(Node*, std::vector<std::pair<Node*, int> > st)
     // borrow
     std::tie(temp, offset_parent) = st.back();
     parent = (InternalNode*) temp;
-    i_sibling = _sibling(parent, offset);
+    i_sibling = _sibling(parent, offset_parent);
 
     if (i_sibling != -1) {
         sibling = (InternalNode*) parent->children[i_sibling];
 
-        if (offset_parent < offset) {
+        if (offset_parent > i_sibling) {
             // borrow from left sibling
             _shift(node, 0, 1); // make space for borrowed key
             node->children[0] = sibling->children[sibling->numKeysInserted--];
-            node->keys[0] = sibling->keys[sibling->numKeysInserted];
-            parent->keys[offset-1] = node->keys[0];
-            return;
+
+            temp = node->children[1];
+            while (dynamic_cast<InternalNode*>(temp)) {
+                temp = ((InternalNode*) temp)->children[0];
+            }
+            node->keys[0] = temp->keys[0];
+
+            temp = node->children[0];
+            while (dynamic_cast<InternalNode*>(temp)) {
+                temp = ((InternalNode*) temp)->children[0];
+            }
+            parent->keys[offset_parent-1] = temp->keys[0];
         } else {
             // borrow from right sibling
             node->keys[node->numKeysInserted++] = sibling->children[0]->keys[0];
@@ -593,19 +633,16 @@ void BPlusTree :: _updateUpstream(Node*, std::vector<std::pair<Node*, int> > st)
                 temp = ((InternalNode*) temp)->children[0];
             }
             parent->keys[i_sibling-1] = temp->keys[0];
-            return;
         }
+        return;
     }
     
-    if (offset_parent == 0) {
-        // merge onto right sibling
-        node->mergeRight((InternalNode*) parent->children[offset_parent+1]);
-        _updateUpstream(parent, st);
-    } else {
-        // merge onto left sibling
-        node->mergeLeft((InternalNode*) parent->children[offset_parent-1]);
-        _updateUpstream(parent, st);
-    }
+    // merge onto right sibling
+    if (offset_parent == 0) node->mergeRight((InternalNode*) parent->children[offset_parent+1]);
+    // merge onto left sibling
+    else node->mergeLeft((InternalNode*) parent->children[offset_parent-1]);
+
+    _updateUpstream(parent, st);
 }
 
 
@@ -620,12 +657,13 @@ void BPlusTree :: updateIndex(float deletedKey) {
     LeafNode* sibling;
     LeafNode* leaf;
     InternalNode* parent;
-    int offset, i_sibling, i;
+    int offset, offset_parent, i_sibling, i;
     
     std::tie(node, offset) = st.back();
     leaf = (LeafNode*) node;
     st.pop_back();
 
+    leaf->records[offset]->fg3PctHomeByteArray = floatToBytes(2); // mark as deleted
     _shift(leaf, offset+1, -1); // delete
 
     // ------------ CASE 1 ------------
@@ -635,10 +673,11 @@ void BPlusTree :: updateIndex(float deletedKey) {
     
     // ------------ CASE 2 ------------
     // Borrow from sibling
-    std::tie(temp, offset) = st.back();
+
+    std::tie(temp, offset_parent) = st.back();
 
     parent = (InternalNode*) temp;
-    i_sibling = _leafSibling(parent, offset);
+    i_sibling = _leafSibling(parent, offset_parent);
 
     if (i_sibling != -1) {
         sibling = (LeafNode*) (parent->children[i_sibling]);
@@ -648,7 +687,7 @@ void BPlusTree :: updateIndex(float deletedKey) {
             _shift(leaf, 0, 1); // make space for borrowed key
             leaf->records[0] = sibling->records[--sibling->numKeysInserted];
             leaf->keys[0] = sibling->keys[sibling->numKeysInserted];
-            parent->keys[offset-1] = leaf->keys[0];
+            parent->keys[offset_parent-1] = leaf->keys[0];
         } else {
             // borrow from right sibling
             leaf->keys[leaf->numKeysInserted++] = sibling->keys[0];
@@ -661,7 +700,7 @@ void BPlusTree :: updateIndex(float deletedKey) {
     } 
 
     // ------------ CASE 3 ------------
-    // Unable to borrow, hence need to delete itself & parent's ptr
+    // Unable to borrow, hence need to merge with sibling & delete parent's ptr
     // since we delete a leaf node, we need to update it's left leaf's pointer
 
     for (i=st.size()-1; i>=0; i--) {
@@ -676,6 +715,12 @@ void BPlusTree :: updateIndex(float deletedKey) {
         }
         ((LeafNode*) temp)->next = leaf->next;
     }
+
+    // merge onto right sibling
+    if (offset_parent == 0) leaf->mergeRight((LeafNode*) parent->children[offset_parent+1]);
+    // merge onto left sibling
+    else leaf->mergeLeft((LeafNode*) parent->children[offset_parent-1]);
+    
     _updateUpstream(parent, st);
 }
 
@@ -688,7 +733,7 @@ void BPlusTree :: print() {
     float* keys;
     Node** children;
     Node* child;
-    int i, j;
+    int i;
 
     temp.push(root);
     curr.push(temp);

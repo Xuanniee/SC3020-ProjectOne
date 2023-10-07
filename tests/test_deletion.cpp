@@ -1,11 +1,12 @@
+#include <cstring>
 #include "../BPlusTree/bPlusTree.h"
 #include "../loadData.h"
 #include "../Node/node.h"
 #include "../Record/record.h"
-#include <cstring>
+#include "../Block Manager/blockManager.h"
 
 
-int test_deletion() {
+void test_del_1() {
     BPlusTree* bt = new BPlusTree(); 
 
     InternalNode* a1 = new InternalNode();
@@ -58,7 +59,6 @@ int test_deletion() {
     b2->numKeysInserted=1;
     b2->children[0] = c3;
     b2->children[1] = c4;
-
 
     c1->keys[0] = 3;
     c1->numKeysInserted=1;
@@ -128,6 +128,14 @@ int test_deletion() {
     d8->records[0] = r15;
     d8->records[1] = r16;
 
+    d1->next = d2;
+    d2->next = d3;
+    d3->next = d4;
+    d4->next = d5;
+    d5->next = d6;
+    d6->next = d7;
+    d7->next = d8;
+
     r1->fg3PctHomeByteArray = floatToBytes(1.0f);
     r2->fg3PctHomeByteArray = floatToBytes(2.0f);
     r3->fg3PctHomeByteArray = floatToBytes(3.0f);
@@ -148,18 +156,12 @@ int test_deletion() {
     bt->setRoot(a1);
     bt->setHeight(4);
 
-    bt->updateIndex(9);
-    bt->updateIndex(10);
-    bt->updateIndex(11);
-    bt->updateIndex(12);
-    bt->updateIndex(13);
-    bt->updateIndex(14);
-    bt->updateIndex(15);
-    bt->updateIndex(1);
-    bt->updateIndex(2);
-    bt->updateIndex(3);
+    BlockManager* bm = new BlockManager();
+    bm->deleteRange(bt, 0,3);
+    bm->deleteRange(bt, 9,13);
     bt->print();
 
+    free(a1);
     free(b1);
     free(b2);
     free(c1);
@@ -175,93 +177,158 @@ int test_deletion() {
     free(d7);
     free(d8);
     free(bt);
+    free(r1);
+    free(r2);
+    free(r3);
+    free(r4);
+    free(r5);
+    free(r6);
+    free(r7);
+    free(r8);
+    free(r9);
+    free(r10);
+    free(r11);
+    free(r12);
+    free(r13);
+    free(r14);
+    free(r15);
+    free(r16);
 }
 
 
-// g++ _x.cpp "BPlusTree/bPlusTree.cpp" "Node/node.cpp" "loadData.cpp" -o _x; .\_x
+void test_del_2() {
+    BPlusTree* bt = new BPlusTree(); 
 
-/*
-Test cases
+    InternalNode* a1 = new InternalNode();
+
+    InternalNode* b1 = new InternalNode();
+    InternalNode* b2 = new InternalNode();
+    InternalNode* b3 = new InternalNode();
+
+    LeafNode* c1 = new LeafNode();
+    LeafNode* c2 = new LeafNode();
+    LeafNode* c3 = new LeafNode();
+    LeafNode* c4 = new LeafNode();
+    LeafNode* c5 = new LeafNode();
+    LeafNode* c6 = new LeafNode();
+
+    Record* r1 = new Record();
+    Record* r2 = new Record();
+    Record* r3 = new Record();
+    Record* r4 = new Record();
+    Record* r5 = new Record();
+    Record* r6 = new Record();
+    Record* r7 = new Record();
+    Record* r8 = new Record();
+    Record* r9 = new Record();
+    Record* r10 = new Record();
+    Record* r11 = new Record();
+    Record* r12 = new Record();
+
+    a1->keys[0] = 6;
+    a1->keys[1] = 10;
+    a1->numKeysInserted = 2;
+    a1->children[0] = b1;
+    a1->children[1] = b2;
+    a1->children[2] = b3;
+
+    b1->keys[0] = 4;
+    b1->numKeysInserted=1;
+    b1->children[0] = c1;
+    b1->children[1] = c2;
+
+    b2->keys[0] = 8;
+    b2->numKeysInserted=1;
+    b2->children[0] = c3;
+    b2->children[1] = c4;
+
+    b3->keys[0] = 12;
+    b3->numKeysInserted=1;
+    b3->children[0] = c5;
+    b3->children[1] = c6;
+
+    c1->keys[0] = 1;
+    c1->keys[1] = 2;
+    c1->numKeysInserted=2;
+    c1->records[0] = r1;
+    c1->records[1] = r2;
+
+    c2->keys[0] = 4;
+    c2->keys[1] = 5;
+    c2->numKeysInserted=2;
+    c2->records[0] = r3;
+    c2->records[1] = r4;
+
+    c3->keys[0] = 6;
+    c3->keys[1] = 7;
+    c3->numKeysInserted=2;
+    c3->records[0] = r5;
+    c3->records[1] = r6;
+
+    c4->keys[0] = 8;
+    c4->keys[1] = 9;
+    c4->numKeysInserted=2;
+    c4->records[0] = r7;
+    c4->records[1] = r8;
+
+    c5->keys[0] = 10;
+    c5->keys[1] = 11;
+    c5->numKeysInserted=2;
+    c5->records[0] = r9;
+    c5->records[1] = r10;
+
+    c6->keys[0] = 12;
+    c6->keys[1] = 13;
+    c6->numKeysInserted=2;
+    c6->records[0] = r11;
+    c6->records[1] = r12;
+
+    r1->fg3PctHomeByteArray = floatToBytes(1.0f);
+    r2->fg3PctHomeByteArray = floatToBytes(2.0f);
+    r3->fg3PctHomeByteArray = floatToBytes(4.0f);
+    r4->fg3PctHomeByteArray = floatToBytes(5.0f);
+    r5->fg3PctHomeByteArray = floatToBytes(6.0f);
+    r6->fg3PctHomeByteArray = floatToBytes(7.0f);
+    r7->fg3PctHomeByteArray = floatToBytes(8.0f);
+    r8->fg3PctHomeByteArray = floatToBytes(9.0f);
+    r9->fg3PctHomeByteArray = floatToBytes(10.0f);
+    r10->fg3PctHomeByteArray = floatToBytes(11.0f);
+    r11->fg3PctHomeByteArray = floatToBytes(12.0f);
+    r12->fg3PctHomeByteArray = floatToBytes(13.0f);
+
+    bt->setRoot(a1);
+    bt->setHeight(3);
+    bt->updateIndex(4);
+    bt->updateIndex(13);
+    bt->print();
+
+    free(a1);
+    free(b1);
+    free(b2);
+    free(b3);
+    free(c1);
+    free(c2);
+    free(c3);
+    free(c4);
+    free(c5);
+    free(c6);
+    free(bt);
+    free(r1);
+    free(r2);
+    free(r3);
+    free(r4);
+    free(r5);
+    free(r6);
+    free(r7);
+    free(r8);
+    free(r9);
+    free(r10);
+    free(r11);
+    free(r12);
+}
 
 
------------- Test 1 ------------
-* leaf has sufficient keys
-* update parent key
-
-delete 3
-9 5 13 4 7 11 15 1 2 4 null 5 6 7 8 9 10 11 12 13 14 15 16
-
------------- Test 2 ------------
-* leaf has sufficient keys
-* update grandparent key
-
-delete 5
-9 6 13 3 7 11 15 1 2 3 4 6 null 7 8 9 10 11 12 13 14 15 16
-
-
------------- Test 3 ------------
-* borrow from left sibling
-
-delete 7
-9 5 13 3 8 11 15 1 2 3 4 5 6 8 null 9 10 11 12 13 14 15 15
-
-delete 8
-9 5 13 3 6 11 15 1 2 3 4 5 null 6 null 9 10 11 12 13 14 15 15
-
------------- Test 4 ------------
-* borrow from right sibling
-
-delete 9
-10 5 13 3 7 11 15 1 2 3 4 5 6 7 8 10 null 11 12 13 14 15 16
-
-delete 10
-11 5 13 3 7 12 15 1 2 3 4 5 6 7 8 11 null 12 null 13 14 15 16
-
-
------------- Test 5 ------------
-* recursive delete left
-
-delete 4
-delete 3
-9 5 13 2 7 11 15 1 null 2 null 5 6 7 8 9 10 11 12 13 14 15 16
-
-delete 2
-9 13 5 7 11 null 15 null 1 null 5 6 7 8 9 10 11 12 13 14 15 16
-
-
------------- Test 6 ------------
-* recursive delete right I
-
-delete 9
-delete 10
-11 5 13 3 7 11 15 1 2 3 4 5 6 7 8 11 null 12 null 13 14 15 16
-
-delete 11
-5 13 3 null 7 null 13 15 1 2 3 4 5 6 7 8 12 null 13 14 15 16
-
-
------------- Test 7 ------------
-* recursive delete right II
-
-delete 9
-delete 10
-delete 11
-5 12 3 null 7 null 13 15 1 2 3 4 5 6 7 8 12 null 13 14 15 16
-
-delete 12
-5 13 3 7 14 15 1 2 3 4 5 6 7 8 13 null 14 null 15 16
-
-delete 13
-5 14 3 7 15 1 2 3 4 5 6 7 8 14 null 15 16
-
-delete 14
-5 14 3 7 15 1 2 3 4 5 6 7 8 14 null 15 16
-
-delete 15
-5 3 null 7 16 1 2 3 4 5 6 7 8 16 null
-
-delete 1
-delete 2
-delete 3
-7 5 16 4 null 5 6 7 8 16 null
-*/
+void test_deletion() {
+    // test_del_1();
+    test_del_2();
+}

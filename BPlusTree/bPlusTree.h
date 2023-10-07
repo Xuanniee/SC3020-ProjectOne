@@ -38,6 +38,13 @@ class BPlusTree {
             return root;
         }
 
+        void printRootNodeKeys() {
+            // Print out all the Keys of the Roots
+            for (int i = 0; i < (this->root->numKeysInserted); i += 1) {
+                std::cout << this->root->keys[i] << " ";
+            }
+        }
+
         /**
          * Mutator used for test_deletion. To be removed
         */
@@ -108,6 +115,13 @@ class BPlusTree {
          * @brief Print tree to console. Temp function used for testing. To be removed
         */
         void print();
+
+        /**
+         * @brief Determines the Number of Nodes (Internal & Leaf) in a B+ Tree given the Root
+         * 
+         * @return int 
+         */
+        int countNodesInBPlusTree(Node* rootNode);
 };
 
 // ------------------- Helper functions -------------------

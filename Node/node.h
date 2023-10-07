@@ -40,6 +40,21 @@ typedef struct InternalNode: Node {
 typedef struct LeafNode: Node {
     Record* records[NUM_KEYS];
     LeafNode* next;
+
+    /**
+     * @brief Merge current node with a sibling leaf node on the left
+     * 
+     * @param left Sibling leaf node on the left of this node
+    */
+    void mergeLeft(LeafNode* left);    
+
+
+    /**
+     * @brief Merge current node with a sibling leaf node on the right
+     * 
+     * @param right Sibling leaf node on the right of this node
+    */
+    void mergeRight(LeafNode* right);    
 } LeafNode;
 
 #endif

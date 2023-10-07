@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -std=c++17
 
 main: main.o blockManager.o bPlusTree.o node.o loadData.o
 	$(CC) $(CFLAGS) -o main main.o blockManager.o bPlusTree.o node.o loadData.o

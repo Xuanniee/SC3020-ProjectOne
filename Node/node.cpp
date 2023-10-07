@@ -42,3 +42,32 @@ void InternalNode :: mergeRight(InternalNode* right) {
     right->numKeysInserted += numKeysInserted+1;
     free(this);
 }
+
+
+// ---------------- LeafNode ----------------
+void LeafNode :: mergeLeft(LeafNode* left) {
+    int n = left->numKeysInserted;
+
+    // copy from right to left
+    std::memcpy(left->keys+n, keys, numKeysInserted*sizeof(float));
+    std::memcpy(left->records+n, records, numKeysInserted*sizeof(Node*));
+
+    left->numKeysInserted += numKeysInserted;
+    free(this);
+}
+
+
+void LeafNode :: mergeRight(LeafNode* right) {
+    int n = right->numKeysInserted;
+
+    // make space in dest
+    std::memcpy(right->keys+numKeysInserted, right->keys, n*sizeof(float));
+    std::memcpy(right->records+numKeysInserted, right->records, n*sizeof(Node*));
+
+    // copy from left to right
+    std::memcpy(right->records, records, numKeysInserted*sizeof(Node*));
+    std::memcpy(right->keys, keys, numKeysInserted*sizeof(float));
+
+    right->numKeysInserted += numKeysInserted;
+    free(this);
+}
