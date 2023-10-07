@@ -438,19 +438,21 @@ int BPlusTree::insertKeyInTree(float key, Record* targetRecord) {
 bool BPlusTree :: findRecordInTree(float key, std::stack<Node*> *stackPtr, Record **recordPtr) {
     
     stackPtr->push(root);
-    Node* next;
+    // INCREMENT LOAD COUNTER
+    Node* next = NULL;
     Record* r = NULL;
     bool found = false;
 
     for (int i = 0; i < height-1; i++) {
         for (int j = 0; j < stackPtr->top()->numKeysInserted; j++) {
-            if (stackPtr->top()->keys[j] >= key) {
+            if (stackPtr->top()->keys[j] > key) {
+            // INCREMENT LOAD COUNTER
                 next = ((InternalNode*) stackPtr->top())->children[j];
                 break;
             }
         }
         // If next hasn't been assigned, means it refers to the last node pointer
-        (next == NULL) && (next = ((InternalNode*) stackPtr->top())->children[stackPtr->top()->numKeysInserted]);
+        (next == NULL) && (next = ((InternalNode*) stackPtr->top())->children[stackPtr->top()->numKeysInserted]); // INCREMENT LOAD COUNTER
         stackPtr->push(next);
         next = NULL;
     }
@@ -739,4 +741,60 @@ void BPlusTree :: print() {
         std::cout << "] ";
     }
     std::cout<<std::endl;
+}
+
+std::pair<Record*, Record*> BPlusTree :: findRecordsInRange(float key1, float key2) {
+    Node* curr = root;
+    Node* prev;
+    // INCREMENT LOAD COUNTER
+    Record* start;
+    Record* end = NULL;
+
+    for (int i = 0; i < height-1; i++) {
+        for (int j = 0; j < curr->numKeysInserted; j++) {
+            if (key1 < curr->keys[j]) {
+                // INCREMENT LOAD COUNTER
+                curr = ((InternalNode*) curr)->children[j];
+                break;
+            }
+        }
+        // If next hasn't been assigned, means it refers to the last node pointer
+        (curr == NULL) && (curr = ((InternalNode*) curr)->children[curr->numKeysInserted]); // INCREMENT LOAD COUNTER
+    }
+
+    for (int j = 0; j < curr->numKeysInserted; j++) {
+        if (key1 <= curr->keys[j]) {
+            start = ((LeafNode*) curr)->records[j];
+            break;
+        }
+    }
+
+    while (curr != NULL) {
+        for (int j = 0; j < curr->numKeysInserted; j++) {
+            if (key2 == curr->keys[j]) {
+                end = ((LeafNode*) curr)->records[j];
+                break;
+            } else if (key2 < curr->keys[j] && j == 0) {
+                end = ((LeafNode*) prev)->records[prev->numKeysInserted-1];
+                break;
+            } else if (key2 < curr->keys[j]) {
+                end = ((LeafNode*) curr)->records[j-1];
+                break;
+            }
+        }
+        if (end != NULL) {
+            break;
+        }
+
+        prev = curr;
+        // INCREMENT LOAD COUNTER IF NEXT NOT NULL
+        curr = ((LeafNode*) curr)->next;
+    }
+
+    // Probably means that the upper bound is larger than all keys in the index
+    if (end == NULL) {
+        end = ((LeafNode*) prev)->records[prev->numKeysInserted-1];
+    }
+
+    return std::make_pair(start, end);
 }
