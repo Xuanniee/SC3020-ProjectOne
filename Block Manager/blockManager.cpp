@@ -338,7 +338,8 @@ void BlockManager ::deleteRange(BPlusTree *btree, float low, float upp)
     Record *st, *end;
     unsigned short int *keys;
     unsigned short int ulow = floatToBytes(low), uupp = floatToBytes(upp);
-    int i, j, st_bk, st_rk, end_bk, end_rk;;
+    int i, j, st_bk, st_rk, end_bk, end_rk;
+    bool done = false;
 
     for (int _ = 1; _ < btree->getHeight(); _++) {
         keys = curr->keys;
@@ -359,15 +360,18 @@ void BlockManager ::deleteRange(BPlusTree *btree, float low, float upp)
     }
 
     // acquire all keys to be deleted
-    while (leaf) {
+    while (!done) {
         keys = leaf->keys;
         recs = leaf->records;
 
         for (i = 0; i < leaf->numKeysInserted; i++) {
-            if (keys[i] <=  uupp) {
+            if (keys[i] <= uupp) {
                 to_del.push_back(keys[i]);
                 end = recs[i];
-            } else break;
+            } else {
+                done = true;
+                break;
+            }
         }
         leaf = leaf->next;
     }
