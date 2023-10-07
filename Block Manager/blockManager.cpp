@@ -382,7 +382,7 @@ void BlockManager ::deleteRange(BPlusTree *btree, float low, float upp)
     std::tie(st_bk, st_rk) = getBlockFromAddress(st);
     std::tie(end_bk, end_rk) = getBlockFromAddress(end);
 
-    std::cout << st_bk << ", " << st_rk << st_bk << ", " << end_bk << ", " << end_rk << std::endl;
+    // std::cout << st_bk << ", " << st_rk << st_bk << ", " << end_bk << ", " << end_rk << std::endl;
     
     for (i=st_bk; i<end_bk; i++) {
         for (j=0; j<MAX_RECORDS; j++) {

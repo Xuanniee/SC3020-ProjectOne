@@ -7,8 +7,10 @@
 #include <stack>
 #include <vector>
 #include <tuple>
+
 #include "../Record/record.h"
 #include "../Node/node.h"
+#include "../loadData.h"
 
 
 class BPlusTree {
@@ -41,7 +43,7 @@ class BPlusTree {
         void printRootNodeKeys() {
             // Print out all the Keys of the Roots
             for (int i = 0; i < (this->root->numKeysInserted); i += 1) {
-                std::cout << this->root->keys[i] << " ";
+                std::cout << bytesToFloat(this->root->keys[i]) << " ";
             }
         }
 

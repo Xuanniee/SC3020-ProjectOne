@@ -191,21 +191,15 @@ int main() {
     /**
      * Experiment 5 - Delete movies with FG_PCT_home <= 0.35, update B+ Tree and report statistics
      */
+    std::cout << "Experiment 5 Results:" << endl << endl;
+
     startIndex = std::chrono::high_resolution_clock::now();
     // Delete and Update B+ Tree Function
+    blockManager.deleteRange(&bPlusTree, 0, 0.35);
     endIndex = std::chrono::high_resolution_clock::now();
     durationNormal = endIndex - startIndex;
-    
-    // Linear Scan Retrieval
-    startLinear = std::chrono::high_resolution_clock::now();
-    // Insert Linear Scan Method
-    blockManager.linearScanRange(0.35, -1, true);
-    endLinear = std::chrono::high_resolution_clock::now();
-    durationLinear = endLinear - startLinear;
-    cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
 
-    // B+ Tree deletion
-    blockManager.deleteRange(&bPlusTree, 0, 0.35);
+    
 
     // Updated Nodes and Height
     bPlusTreeHeight = bPlusTree.getHeight();
@@ -217,9 +211,13 @@ int main() {
     cout << "Content of the Root Node (Only Keys): ";
     bPlusTree.printRootNodeKeys(); 
     cout << "." << endl;
-    cout << "Running Time of Retrieval Process: " << durationNormal.count() << " seconds" << endl;
-    // Linear will be printed inside the function
-    cout << "Number of Data Blocks Accessed (Linear Scan):" << endl;
+    cout << "Running Time of Retrieval Process: " << durationNormal.count() << " seconds" << endl << endl;
+
+    // Linear Scan Retrieval
+    startLinear = std::chrono::high_resolution_clock::now();
+    blockManager.linearScanRange(0.35, -1, true);
+    endLinear = std::chrono::high_resolution_clock::now();
+    durationLinear = endLinear - startLinear;
     cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
 
     return 0;
