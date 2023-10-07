@@ -392,7 +392,7 @@ std::vector<Record*> BlockManager :: findRecordsInRange(Record* low, Record* upp
         numDataBlocksAccessed += 1;
         for (int j = i == startBlockIndex ? startRecordIndex : 0; 
             j <= i == endBlockIndex ? endRecordIndex : listBlocks[i].numRecords-1; j++) {
-                if (listBlocks[i].records[j].fgPctHomeByteArray != 2) {
+                if (listBlocks[i].records[j].fgPctHomeByteArray != 2000) {
                     res.push_back(&listBlocks[i].records[j]);
                 }
             }
