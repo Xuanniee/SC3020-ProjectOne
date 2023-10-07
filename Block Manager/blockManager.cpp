@@ -483,7 +483,7 @@ void BlockManager ::linearScanKey(float keyValue1){
     }
 
     std::cout << "Number of Data Blocks Accessed (Linear Scan): " << numBlk+1 << endl;
-    std::cout << "Average of FG3_PCT_HOME (Linear Scan): " << avg_FG3/numRec << endl;    
+    // std::cout << "Average of FG3_PCT_HOME (Linear Scan): " << avg_FG3/numRec << endl;    
 
 }
 
@@ -537,7 +537,7 @@ void BlockManager ::linearScanRange(float keyValue1, float keyValue2, bool lower
         }
         // std::cout<<"=========Brute-force Linear Search=========" <<endl;
         std::cout << "Number of Data Blocks Access (Linear Scan): " << numBlk+1 << endl;
-        std::cout << "Average of FG3_PCT_HOME (Linear Scan): " << avg_FG3/numRec << endl; 
+        // std::cout << "Average of FG3_PCT_HOME (Linear Scan): " << avg_FG3/numRec << endl; 
 
     }else{
         for (numBlk=0; numBlk<this->getNumBlocks(); numBlk++){
@@ -565,7 +565,7 @@ void BlockManager ::linearScanRange(float keyValue1, float keyValue2, bool lower
 
         // std::cout<<"=========Brute-force Linear Search=========" <<endl;
         std::cout << "Number of Data Blocks Access (Linear Scan): " << numBlk+1 << endl;
-        std::cout << "Average of FG3_PCT_HOME (Linear Scan): " << avg_FG3/numRec << endl; 
+        // std::cout << "Average of FG3_PCT_HOME (Linear Scan): " << avg_FG3/numRec << endl; 
     }
     
 }
