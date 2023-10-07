@@ -41,7 +41,7 @@ void LeafNode :: mergeLeft(LeafNode* left) {
 
     // copy from right to left
     std::memmove(left->keys+n, keys, numKeysInserted*sizeof(unsigned short int));
-    std::memmove(left->records+n, records, numKeysInserted*sizeof(Node*));
+    std::memmove(left->records+n, records, numKeysInserted*sizeof(Record*));
 
     left->numKeysInserted += numKeysInserted;
     free(this);
@@ -53,10 +53,10 @@ void LeafNode :: mergeRight(LeafNode* right) {
 
     // make space in dest
     std::memmove(right->keys+numKeysInserted, right->keys, n*sizeof(unsigned short int));
-    std::memmove(right->records+numKeysInserted, right->records, n*sizeof(Node*));
+    std::memmove(right->records+numKeysInserted, right->records, n*sizeof(Record*));
 
     // copy from left to right
-    std::memmove(right->records, records, numKeysInserted*sizeof(Node*));
+    std::memmove(right->records, records, numKeysInserted*sizeof(Record*));
     std::memmove(right->keys, keys, numKeysInserted*sizeof(unsigned short int));
 
     right->numKeysInserted += numKeysInserted;

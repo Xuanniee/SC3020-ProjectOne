@@ -545,30 +545,33 @@ void BPlusTree :: _updateUpstream(Node*, std::vector<std::pair<Node*, int> > st)
 }
 
 
-void BPlusTree :: updateIndex(unsigned short int deletedKey) {
+Record* BPlusTree :: updateIndex(unsigned short int deletedKey) {
     std::vector<std::pair<Node*, int> > st = _ancestry(deletedKey);
 
-    if (st.empty()) return;
+    if (st.empty()) return nullptr;
 
     Node* node;
     Node* temp;
     LeafNode* sibling;
     LeafNode* leaf;
     InternalNode* parent;
+    Record* res;
     int offset, offset_parent, i_sibling, i;
     
     std::tie(node, offset) = st.back();
     leaf = (LeafNode*) node;
     st.pop_back();
-
-    leaf->records[offset]->fg3PctHomeByteArray = floatToBytes(2); // mark as deleted
+    res = leaf->records[offset];
     _shift(leaf, offset+1, -1); // delete
 
     // ------------ CASE 1 ------------
     // Sufficient keys remaining
     
-    if (leaf->numKeysInserted >= MIN_LEAF_KEYS) return _updateFirstLeft(st, leaf->keys[0]);
-    
+    if (leaf->numKeysInserted >= MIN_LEAF_KEYS) {
+        _updateFirstLeft(st, leaf->keys[0]);
+        return res;
+    }
+
     // ------------ CASE 2 ------------
     // Borrow from sibling
 
@@ -588,13 +591,13 @@ void BPlusTree :: updateIndex(unsigned short int deletedKey) {
             parent->keys[offset_parent-1] = leaf->keys[0];
         } else {
             // borrow from right sibling
-            leaf->keys[leaf->numKeysInserted++] = sibling->keys[0];
-            leaf->records[leaf->numKeysInserted] = sibling->records[0];
+            leaf->keys[leaf->numKeysInserted] = sibling->keys[0];
+            leaf->records[leaf->numKeysInserted++] = sibling->records[0];
             _shift(sibling, 1, -1); // delete sibling's first key & ptr
             parent->keys[i_sibling-1] = sibling->keys[0];
             _updateFirstLeft(st, leaf->keys[0]);
         }
-        return;
+        return res;
     } 
 
     // ------------ CASE 3 ------------
@@ -620,6 +623,7 @@ void BPlusTree :: updateIndex(unsigned short int deletedKey) {
     else leaf->mergeLeft((LeafNode*) parent->children[offset_parent-1]);
     
     _updateUpstream(parent, st);
+    return res;
 }
 
 
