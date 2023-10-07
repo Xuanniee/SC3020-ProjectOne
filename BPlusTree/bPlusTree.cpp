@@ -224,12 +224,6 @@ int BPlusTree::insertKeyInTree(unsigned short int key, Record* targetRecord) {
         ((LeafNode*) newLeafNode)->next = nextLeafNode;
 
     }
-    else {
-        // Odd Number of Keys. Original node has 1 more key and record
-        // Nth happens since we will always have 40 Keys when we split
-        // Should remove the if clause. But I left it here so that I will rmb what happens and can explain
-        cout << "where tf am i" << endl;
-    }
 
     // Check if the Parent Node exists
     InternalNode *parentNode; // = targetLeafNode->parent;
