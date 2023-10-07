@@ -6,6 +6,7 @@
 #include <vector>
 #include <cmath> 
 #include <ctime>
+#include <iomanip>
 #include "loadData.h"
 
 using namespace std;
