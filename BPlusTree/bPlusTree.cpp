@@ -172,7 +172,6 @@ int BPlusTree::insertKeyInTree(unsigned short int key, Record* targetRecord) {
 
     // Case 2 - Leaf Node is full, has (n+1) keys now. 
     // Create a new sibling leaf node
-
     Node *newLeafNode = (Node*) malloc(sizeof(LeafNode));
    ((LeafNode*) newLeafNode)->next = NULL;
 
