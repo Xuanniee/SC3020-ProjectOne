@@ -21,7 +21,7 @@ int bytesToHome(unsigned char num){
     return out;
 }
 
-unsigned short int floatToBytes(float num){
+unsigned short int floatToBytes(double num){
     //at most 3 s.f. 
     unsigned short int bytes;
     // First bit indicates if 1 or 0. Remaining 7 bits are for decimal. (2B)
@@ -50,7 +50,7 @@ short int dateToBytes(string date){
     istringstream ss(date);
     if (ss >> get_time(&t, "%d/%m/%Y"))
     {
-        short int days = (mktime(&t))/86400;
+        short int days = (mktime(&t))/86400 + 1;
         return days;
     }
     else
@@ -114,7 +114,7 @@ vector<Record> loadData(){
         // cout<< "PTS: " << recordArr[i][2] << " --> " << r.ptsHome << endl;
         
         try{
-            r.fgPctHomeByteArray = floatToBytes(stof(recordArr[i][3]));
+            r.fgPctHomeByteArray = floatToBytes(stod(recordArr[i][3]));
         }catch(const exception& e)
         {
             r.fgPctHomeByteArray = floatToBytes(0.000);
@@ -123,7 +123,7 @@ vector<Record> loadData(){
         // cout<< "FG: " << recordArr[i][3] << " --> " << r.fgPctHomeByteArray << endl;
 
         try{
-            r.ftPctHomeByteArray = floatToBytes(stof(recordArr[i][4]));
+            r.ftPctHomeByteArray = floatToBytes(stod(recordArr[i][4]));
         }
         catch(const exception& e)
         {
@@ -133,7 +133,7 @@ vector<Record> loadData(){
         // cout<< "FT: " << recordArr[i][4] << " --> " << r.ftPctHomeByteArray << endl;
         
         try{
-            r.fg3PctHomeByteArray = floatToBytes(stof(recordArr[i][5]));
+            r.fg3PctHomeByteArray = floatToBytes(stod(recordArr[i][5]));
         }
         catch(const exception& e)
         {
