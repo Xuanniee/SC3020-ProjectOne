@@ -118,7 +118,25 @@ class BlockManager {
        void deleteRange(BPlusTree* btree, float low, float upp);
 
        /**
-         * @brief linear search of records for single key query
+        * @brief Get all records in range
+        * 
+        * @param low
+        * @param upp
+        * 
+        * @return returns a list of record pointers
+        */
+       std::vector<Record*> findRecordsInRange(Record* low, Record* upp);
+
+       /**
+        * @brief Get the block number given an address
+        * 
+        * @param address
+        * 
+        * @return returns a pair (block index, relative record index)
+        */
+       std::pair<int, int> getBlockFromAddress(Record* address);
+        
+        /** @brief linear search of records for single key query
          * 
          * @param keyValue1 key value to be searched
          */
@@ -136,4 +154,3 @@ class BlockManager {
 };
 
 #endif
-

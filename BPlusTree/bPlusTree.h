@@ -73,6 +73,15 @@ class BPlusTree {
         bool findRecordInTree(float key, std::stack<Node*> *stackPtr, Record **recordPtr);
 
         /**
+         * @brief find all records with key values between key1 and key2, inclusive
+         * 
+         * @param key1 
+         * @param key2 
+         * @return the start and end pointers for range query within blockManager 
+         */
+        std::pair<Record*, Record*> findRecordsInRange(float key1, float key2);
+
+        /**
          * @brief Insert a key into the index
          * 
          * @param key 
@@ -89,7 +98,7 @@ class BPlusTree {
         std::vector<std::pair<Node*, int> > _ancestry(float key);
 
         /**
-         * @brief Recusively update upstream internal nodes
+         * @brief Recursively update upstream internal nodes
          * 
          * @param st Stack of parent nodes & offsets
         */

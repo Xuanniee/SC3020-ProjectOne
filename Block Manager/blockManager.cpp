@@ -372,6 +372,40 @@ void BlockManager ::deleteRange(BPlusTree *btree, float low, float upp)
     }
 }
 
+std::vector<Record*> BlockManager :: findRecordsInRange(Record* low, Record* upp) {
+    vector<Record*> res;
+    int startBlockIndex, startRecordIndex, endBlockIndex, endRecordIndex;
+
+    std::tie(startBlockIndex, startRecordIndex) = getBlockFromAddress(low);
+    std::tie(endBlockIndex, endRecordIndex) = getBlockFromAddress(upp);
+
+    if (startBlockIndex == -1 || startRecordIndex == -1 || endBlockIndex == -1 || endRecordIndex == -1) {
+        cout << "Unable to find records in range" << endl;
+        exit(-1);
+    }
+
+
+    // ADD LOAD INCREMENT LOGIC HERE
+    for (int i = startBlockIndex; i <= endBlockIndex; i++) {
+        for (int j = i == startBlockIndex ? startRecordIndex : 0; 
+            j <= i == endBlockIndex ? endRecordIndex : listBlocks[i].numRecords-1; j++) {
+                res.push_back(&listBlocks[i].records[j]);
+            }
+    }
+
+    return res;
+}
+
+std::pair<int, int> BlockManager :: getBlockFromAddress(Record* address) {
+    for (int i = 0; i < numDataBlocks; i++) {
+        if (address - &(listBlocks[i].records[0]) <= 19) {
+            return make_pair(i, (address - &(listBlocks[i].records[0])));
+        }
+    }
+
+    cout << "Address not in database" << endl;
+    return make_pair(-1, -1);
+}
 void BlockManager ::linearScanKey(float keyValue1){
 
     DataBlock current = this->getListBlocks()[0];
