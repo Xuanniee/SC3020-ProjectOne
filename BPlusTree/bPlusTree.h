@@ -68,9 +68,9 @@ class BPlusTree {
          * @param key -- search key
          * @param stackPtr -- the pointer to the stack
          * @param recordPtr -- pointer to the pointer to a record
-         * @return bool -- whether the record has been found
+         * @return std::pair<bool, int> -- whether the record has been found and the num of index blocks accessed
          */
-        bool findRecordInTree(unsigned short int key, std::stack<Node*> *stackPtr, Record **recordPtr);
+        std::pair<bool, int> findRecordInTree(unsigned short int key, std::stack<Node*> *stackPtr, Record **recordPtr);
 
         /**
          * @brief find all records with key values between key1 and key2, inclusive

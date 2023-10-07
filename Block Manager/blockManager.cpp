@@ -323,7 +323,7 @@ void BlockManager ::buildIndex(BPlusTree *btree)
 
 void BlockManager ::displayStats()
 {
-    cout << "=========Block Manager Statistics=========" << endl;
+    cout << "========= Block Manager Statistics =========" << endl;
     cout << "Total number of records stored: " << numRecords << endl;
     cout << "Size of each record: " << sizeof(Record) << endl;
     cout << "Number of records stored in each block: " << MAX_RECORDS << endl;
@@ -391,7 +391,10 @@ void BlockManager ::deleteRange(BPlusTree *btree, float low, float upp)
 }
 
 std::vector<Record*> BlockManager :: findRecordsInRange(Record* low, Record* upp) {
+    // Ans Array to be returned
     vector<Record*> res;
+
+    // Initialise variables
     int startBlockIndex, startRecordIndex, endBlockIndex, endRecordIndex;
     int numDataBlocksAccessed = 1;
 
@@ -404,16 +407,21 @@ std::vector<Record*> BlockManager :: findRecordsInRange(Record* low, Record* upp
     }
 
     // ADD LOAD INCREMENT LOGIC HERE
+    // Iterate from start to end block
+    // std::cout << "Before for loop" << endl;
     for (int i = startBlockIndex; i <= endBlockIndex; i++) {
-        // Assume i iterates over all the datablocks from start to end
         numDataBlocksAccessed += 1;
-        for (int j = i == startBlockIndex ? startRecordIndex : 0; 
-            j <= i == endBlockIndex ? endRecordIndex : listBlocks[i].numRecords-1; j++) {
+        //  Iterate over all the records from start to end datablock
+        for (int j = (i == startBlockIndex ? startRecordIndex : 0); 
+            j <= (i == endBlockIndex ? endRecordIndex : listBlocks[i].numRecords-1); j++) {
+
                 if (listBlocks[i].records[j].fgPctHomeByteArray != 2000) {
                     res.push_back(&listBlocks[i].records[j]);
                 }
             }
     }
+    // std::cout << "After for loop" << endl;
+
     unsigned short int endRecordKey = listBlocks[endBlockIndex].records[endRecordIndex].fgPctHomeByteArray;
     for (int i = endRecordIndex+1; i < listBlocks[endBlockIndex].numRecords; i++) {
         if (listBlocks[endBlockIndex].records[i].fgPctHomeByteArray == endRecordKey) {

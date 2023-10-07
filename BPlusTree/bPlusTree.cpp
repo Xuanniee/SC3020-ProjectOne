@@ -144,7 +144,8 @@ int BPlusTree::insertKeyInTree(unsigned short int key, Record* targetRecord) {
     // Will retrieve the actual record, but won't be relevant in this function
     Record **recordPtr = NULL;
     // Search the Tree to see if the B+ tree contains the Record Key
-    bool searchResult = findRecordInTree(key, myStackPtr, recordPtr);
+    std::pair<bool, int> result = findRecordInTree(key, myStackPtr, recordPtr);
+    bool searchResult = result.first;
 
     // Check if the Key Value exists in the B+ Tree
     if (searchResult) {
@@ -362,7 +363,7 @@ int BPlusTree::insertKeyInTree(unsigned short int key, Record* targetRecord) {
 }
 
 
-bool BPlusTree :: findRecordInTree(unsigned short int key, std::stack<Node*> *stackPtr, Record **recordPtr) {
+std::pair<bool, int> BPlusTree :: findRecordInTree(unsigned short int key, std::stack<Node*> *stackPtr, Record **recordPtr) {
     // Track the Number of Index & Data Blocks Accessed
     int numIndexBlocks = 1;
 
@@ -404,9 +405,9 @@ bool BPlusTree :: findRecordInTree(unsigned short int key, std::stack<Node*> *st
         }
     }
 
-    std::cout << "Number of Index Nodes Accessed: " << numIndexBlocks << std::endl;
+    // std::cout << "Number of Index Nodes Accessed: " << numIndexBlocks << std::endl;
 
-    return found;
+    return std::make_pair(found, numIndexBlocks);
 }
 
 

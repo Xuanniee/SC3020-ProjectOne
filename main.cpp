@@ -29,8 +29,9 @@ int main() {
         blockManager.insertRecord(recordBytes[i]);
     }
     
-    std::cout << "Experiment 1 Results:" << endl;
+    std::cout << "Experiment 1 Results:" << endl << endl;
     blockManager.displayStats();
+    std::cout << endl;
 
     /**
      * Experiment 2 - Build a B+ Tree Index on "FG_PCT_home" and Report Statistics
@@ -46,14 +47,13 @@ int main() {
     // Determine the Number of Nodes in the Tree
     int numNodes = bPlusTree.countNodesInBPlusTree(bPlusTree.getRoot(), bPlusTree.getHeight());
     
-    cout << "Experiment 2 Results:" << endl;
-    cout << "========= B+ Tree Statistics =========" << endl;
+    cout << "Experiment 2 Results:" << endl << endl;
     cout << "Parameter n of the B+ Tree (i.e. numKeys a node can hold): " << NUM_KEYS << endl;
     cout << "Number of Nodes of B+ Tree: " << numNodes << endl;
     cout << "Number of Levels of the B+ Tree: " << bPlusTreeHeight << endl;
     cout << "Content of the Root Node (Only Keys): ";
     bPlusTree.printRootNodeKeys(); 
-    cout << "." << endl;
+    cout << "." << endl << endl;
 
     // LeafNode* curr = (LeafNode*) ((InternalNode*) bPlusTree.getRoot())->children[0];
 
@@ -80,7 +80,8 @@ int main() {
 
     auto startIndex = std::chrono::high_resolution_clock::now();
     // Time record is the time taken to retrieve the datablocks
-    bPlusTree.findRecordInTree(key, &myStack, recordPtr);
+    std::pair<bool, int> results = bPlusTree.findRecordInTree(key, &myStack, recordPtr);
+    int numIndexBlocksAccessed = results.second;
     std::pair<int, int> blockResults = blockManager.getBlockFromAddress(*recordPtr);
     
     auto endIndex = std::chrono::high_resolution_clock::now();
@@ -129,6 +130,7 @@ int main() {
 
 
     // Print Statistics
+    std::cout << "Number of Index Nodes Accessed: " << numIndexBlocksAccessed << std::endl;
     std::cout << "Number of Data Blocks Accessed: " << numDataBlocksAccessed << std::endl;
     std::cout << "Average of FG3_PCT_home records returned: " << sumFG3/numRecs << std::endl;
 
@@ -161,9 +163,7 @@ int main() {
     Record *endRecord = rangeQueryResult.second;
 
     // Retrieve a list storing all the actual records
-    std::cout << bytesToFloat(startRecord->fgPctHomeByteArray) << "    " << bytesToFloat(endRecord->fgPctHomeByteArray) << endl;
     vector<Record *> actualRecordsList = blockManager.findRecordsInRange(startRecord, endRecord);
-    std::cout << "test2" << endl;
     endIndex = std::chrono::high_resolution_clock::now();
     durationNormal = endIndex - startIndex;
 
@@ -185,7 +185,7 @@ int main() {
     blockManager.linearScanRange(0.600, 1);
     endLinear = std::chrono::high_resolution_clock::now();
     durationLinear = endLinear - startLinear;
-    std::cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
+    std::cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl << endl;
 
     // /**
     //  * Experiment 5 - Delete movies with FG_PCT_home <= 0.35, update B+ Tree and report statistics
