@@ -70,7 +70,7 @@ int main() {
     /**
      * Experiment 3 - Retrieve movies with "FG_PCT_home" equal to 0.5, both inclusively and report the statistics.
      */
-    cout << "Experiment 3 Results:" << endl;
+    cout << "Experiment 3 Results:" << endl << endl;
 
     // Index Database Retrieval    
     stack<Node*> myStack;
@@ -80,7 +80,7 @@ int main() {
     auto endIndex = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> durationNormal = endIndex - startIndex;
 
-    cout << "Running Time of Retrieval Process: " << durationNormal.count() << " seconds" << endl;
+    cout << "Running Time of Retrieval Process: " << durationNormal.count() << " seconds" << endl << endl;
     // TODO Specify Method
 
     // Linear Scan Retrieval
@@ -89,34 +89,43 @@ int main() {
     auto endLinear = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> durationLinear = endLinear - startLinear;
 
+    cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl << endl << endl;
+
+    /**
+     * Experiment 4 - Retrieve those movies with FG_PCT_home from 0.6 to 1, both inclusively and report statistics
+     */
+    cout << "Experiment 4 Results:" << endl << endl;
+
+    startIndex = std::chrono::high_resolution_clock::now();
+    // Find the Start and End Record of the Range Query
+    std::pair<Record*, Record*> rangeQueryResult = bPlusTree.findRecordsInRange(0.600, 1);
+    Record *startRecord = rangeQueryResult.first;
+    Record *endRecord = rangeQueryResult.second;
+
+    // Retrieve a list storing all the actual records
+    vector<Record *> actualRecordsList = blockManager.findRecordsInRange(startRecord, endRecord);
+    endIndex = std::chrono::high_resolution_clock::now();
+    durationNormal = endIndex - startIndex;
+
+    // Time taken to calculate the Average Fg3 is not included in range retrieval
+    float sumFG3 = 0.0;
+    int numRecs = actualRecordsList.size();
+    for (int i = 0; i < numRecs; i += 1) {
+        if (actualRecordsList[i]->fg3PctHomeByteArray != 0) {
+            sumFG3 += bytesToFloat(actualRecordsList[i]->fg3PctHomeByteArray);
+        }
+    }
+    float avgFG3 = sumFG3 / numRecs;
+
+    cout << "Average of FG3_PCT_home of returned records: " << avgFG3 << endl;
+    cout << "Running Time of Retrieval Process: " << durationNormal.count() << " seconds" << endl << endl;
+    
+    // Linear Scan Retrieval
+    startLinear = std::chrono::high_resolution_clock::now();
+    blockManager.linearScanRange(0.600, 1);
+    endLinear = std::chrono::high_resolution_clock::now();
+    durationLinear = endLinear - startLinear;
     cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
-
-    // /**
-    //  * Experiment 4 - Retrieve those movies with FG_PCT_home from 0.6 to 1, both inclusively and report statistics
-    //  */
-    // startIndex = std::chrono::high_resolution_clock::now();
-    // // Insert Ranged Query Method
-    // endIndex = std::chrono::high_resolution_clock::now();
-    // durationNormal = endIndex - startIndex;
-    
-    // // Linear Scan Retrieval
-    // startLinear = std::chrono::high_resolution_clock::now();
-    // // Insert Linear Scan Method
-    // blockManager.linearScanRange(0.600, 1);
-    // endLinear = std::chrono::high_resolution_clock::now();
-    // durationLinear = endLinear - startLinear;
-    // cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
-    
-    
-    // cout << "Experiment 4 Results:" << endl;
-    // cout << "Number of Index Nodes Accessed:" << endl;
-    // cout << "Number of Data Blocks Accessed:" << endl;
-    // cout << "Average of FG3_PCT_home of returned records:" << endl;
-    // cout << "Running Time of Retrieval Process: " << durationNormal.count() << " seconds" << endl;
-
-    // // Linear will be printed inside the function
-    // // cout << "Number of Data Blocks Accessed (Linear Scan):" << endl;
-    // // cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
 
     // /**
     //  * Experiment 5 - Delete movies with FG_PCT_home <= 0.35, update B+ Tree and report statistics

@@ -481,7 +481,8 @@ bool BPlusTree :: findRecordInTree(unsigned short int key, std::stack<Node*> *st
     for (int i = 0; i < height-1; i++) {
         for (int j = 0; j < stackPtr->top()->numKeysInserted; j++) {
             if (stackPtr->top()->keys[j] > key) {
-            // INCREMENT LOAD COUNTER
+                // INCREMENT LOAD COUNTER
+                numIndexBlocks += 1;
                 next = ((InternalNode*) stackPtr->top())->children[j];
                 break;
             }
@@ -489,7 +490,6 @@ bool BPlusTree :: findRecordInTree(unsigned short int key, std::stack<Node*> *st
         // If next hasn't been assigned, means it refers to the last node pointer
         (next == NULL) && (next = ((InternalNode*) stackPtr->top())->children[stackPtr->top()->numKeysInserted]); // INCREMENT LOAD COUNTER
         stackPtr->push(next);
-        numIndexBlocks += 1;
         next = NULL;
     }
 
@@ -792,24 +792,30 @@ void BPlusTree :: print() {
 }
 
 std::pair<Record*, Record*> BPlusTree :: findRecordsInRange(unsigned short int key1, unsigned short int key2) {
+    int numIndexBlocksAccessed = 1;
+
     Node* curr = root;
     Node* prev;
     // INCREMENT LOAD COUNTER
     Record* start;
     Record* end = NULL;
 
+    // Search the B+ Tree
     for (int i = 0; i < height-1; i++) {
         for (int j = 0; j < curr->numKeysInserted; j++) {
             if (key1 < curr->keys[j]) {
                 // INCREMENT LOAD COUNTER
+                numIndexBlocksAccessed += 1;
                 curr = ((InternalNode*) curr)->children[j];
                 break;
             }
         }
         // If next hasn't been assigned, means it refers to the last node pointer
         (curr == NULL) && (curr = ((InternalNode*) curr)->children[curr->numKeysInserted]); // INCREMENT LOAD COUNTER
+        numIndexBlocksAccessed += 1;
     }
 
+    // Search the Leaf Node to find the Start Record
     for (int j = 0; j < curr->numKeysInserted; j++) {
         if (key1 <= curr->keys[j]) {
             start = ((LeafNode*) curr)->records[j];
@@ -817,6 +823,7 @@ std::pair<Record*, Record*> BPlusTree :: findRecordsInRange(unsigned short int k
         }
     }
 
+    // Search the curr Datablock and subsequent datablock to find End Record
     while (curr != NULL) {
         for (int j = 0; j < curr->numKeysInserted; j++) {
             if (key2 == curr->keys[j]) {
@@ -837,12 +844,17 @@ std::pair<Record*, Record*> BPlusTree :: findRecordsInRange(unsigned short int k
         prev = curr;
         // INCREMENT LOAD COUNTER IF NEXT NOT NULL
         curr = ((LeafNode*) curr)->next;
+        if (curr != NULL) {
+            numIndexBlocksAccessed += 1;
+        }
     }
 
     // Probably means that the upper bound is larger than all keys in the index
     if (end == NULL) {
         end = ((LeafNode*) prev)->records[prev->numKeysInserted-1];
     }
+
+    cout << "Number of Index Nodes Accessed: " << numIndexBlocksAccessed << endl;
 
     return std::make_pair(start, end);
 }
