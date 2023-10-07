@@ -55,17 +55,17 @@ int main() {
     bPlusTree.printRootNodeKeys(); 
     cout << "." << endl;
 
-    LeafNode* curr = (LeafNode*) ((InternalNode*) bPlusTree.getRoot())->children[0];
+    // LeafNode* curr = (LeafNode*) ((InternalNode*) bPlusTree.getRoot())->children[0];
 
-    int cnt = 0;
-    while (curr != NULL) {
-        for (int i = 0; i < curr->numKeysInserted; i++) {
-            cnt++;
-            cout << curr->keys[i] << endl;
-        }
-        curr = curr->next;
-    }
-    cout << "COUNT " << cnt << endl << endl << endl;
+    // int cnt = 0;
+    // while (curr != NULL) {
+    //     for (int i = 0; i < curr->numKeysInserted; i++) {
+    //         cnt++;
+    //         cout << curr->keys[i] << endl;
+    //     }
+    //     curr = curr->next;
+    // }
+    // cout << "COUNT " << cnt << endl << endl << endl;
 
     /**
      * Experiment 3 - Retrieve movies with "FG_PCT_home" equal to 0.5, both inclusively and report the statistics.
@@ -74,13 +74,65 @@ int main() {
 
     // Index Database Retrieval    
     stack<Node*> myStack;
-    Record **recordPtr = NULL;
+    Record **recordPtr = (Record**) malloc(sizeof(Record**));
+    float keyFloat = 0.5;
+    unsigned short int key = floatToBytes(keyFloat);
+
     auto startIndex = std::chrono::high_resolution_clock::now();
-    bPlusTree.findRecordInTree(0.5, &myStack, recordPtr, true);
+    // Time record is the time taken to retrieve the datablocks
+    bPlusTree.findRecordInTree(key, &myStack, recordPtr);
+    std::pair<int, int> blockResults = blockManager.getBlockFromAddress(*recordPtr);
+    
     auto endIndex = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> durationNormal = endIndex - startIndex;
 
-    cout << "Running Time of Retrieval Process: " << durationNormal.count() << " seconds" << endl << endl;
+    // Determine the Average FG_PCT_home of records
+    int blockIndex = blockResults.first;
+    int relativeRecordIndex = blockResults.second;
+
+    float sumFG3 = 0.0;
+    int numRecs = 0;
+
+    // Retrieve the Datablock that the target record first appeared in
+    int numDataBlocksAccessed = 1;
+    DataBlock targetBlock = blockManager.getListBlocks()[blockIndex];
+    bool foundRecord = true;
+
+    while (foundRecord) {
+        // Iterate from the target record
+        for (int i = relativeRecordIndex; i < targetBlock.numRecords; i += 1) {
+            if (targetBlock.records[i].fgPctHomeByteArray == key && targetBlock.records[i].fg3PctHomeByteArray != 0) {
+                // Found a matching record
+                numRecs += 1;
+                foundRecord = true;
+                sumFG3 += bytesToFloat(targetBlock.records[i].fg3PctHomeByteArray);
+            }
+            else {
+                // No more record with this key value
+                foundRecord = false;
+                break;
+            }
+        }
+
+        if (foundRecord) {
+            // Reach end of datablock but still may have target block
+            blockIndex += 1;
+            targetBlock = blockManager.getListBlocks()[blockIndex];
+
+            // New Block, start from 0
+            relativeRecordIndex = 0;
+            
+            // Increment Datablock since we need load another
+            numDataBlocksAccessed += 1;
+        }
+    }
+
+
+    // Print Statistics
+    std::cout << "Number of Data Blocks Accessed: " << numDataBlocksAccessed << std::endl;
+    std::cout << "Average of FG3_PCT_home records returned: " << sumFG3/numRecs << std::endl;
+
+    std::cout << "Running Time of Retrieval Process: " << durationNormal.count() << " seconds" << endl << endl;
     // TODO Specify Method
 
     // Linear Scan Retrieval
@@ -89,27 +141,35 @@ int main() {
     auto endLinear = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> durationLinear = endLinear - startLinear;
 
-    cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl << endl << endl;
+    std::cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl << endl << endl;
 
     /**
      * Experiment 4 - Retrieve those movies with FG_PCT_home from 0.6 to 1, both inclusively and report statistics
      */
-    cout << "Experiment 4 Results:" << endl << endl;
+    std::cout << "Experiment 4 Results:" << endl << endl;
+
+    float startKeyFloat = 0.600;
+    float endKeyFloat = 1.0;
+
+    unsigned short int startKeyShortInt = floatToBytes(startKeyFloat);
+    unsigned short int endKeyShortInt = floatToBytes(endKeyFloat);
 
     startIndex = std::chrono::high_resolution_clock::now();
     // Find the Start and End Record of the Range Query
-    std::pair<Record*, Record*> rangeQueryResult = bPlusTree.findRecordsInRange(0.600, 1);
+    std::pair<Record*, Record*> rangeQueryResult = bPlusTree.findRecordsInRange(startKeyShortInt, endKeyShortInt);
     Record *startRecord = rangeQueryResult.first;
     Record *endRecord = rangeQueryResult.second;
 
     // Retrieve a list storing all the actual records
+    std::cout << bytesToFloat(startRecord->fgPctHomeByteArray) << "    " << bytesToFloat(endRecord->fgPctHomeByteArray) << endl;
     vector<Record *> actualRecordsList = blockManager.findRecordsInRange(startRecord, endRecord);
+    std::cout << "test2" << endl;
     endIndex = std::chrono::high_resolution_clock::now();
     durationNormal = endIndex - startIndex;
 
     // Time taken to calculate the Average Fg3 is not included in range retrieval
-    float sumFG3 = 0.0;
-    int numRecs = actualRecordsList.size();
+    sumFG3 = 0.0;
+    numRecs = actualRecordsList.size();
     for (int i = 0; i < numRecs; i += 1) {
         if (actualRecordsList[i]->fg3PctHomeByteArray != 0) {
             sumFG3 += bytesToFloat(actualRecordsList[i]->fg3PctHomeByteArray);
@@ -117,15 +177,15 @@ int main() {
     }
     float avgFG3 = sumFG3 / numRecs;
 
-    cout << "Average of FG3_PCT_home of returned records: " << avgFG3 << endl;
-    cout << "Running Time of Retrieval Process: " << durationNormal.count() << " seconds" << endl << endl;
+    std::cout << "Average of FG3_PCT_home of returned records: " << avgFG3 << endl;
+    std::cout << "Running Time of Retrieval Process: " << durationNormal.count() << " seconds" << endl << endl;
     
     // Linear Scan Retrieval
     startLinear = std::chrono::high_resolution_clock::now();
     blockManager.linearScanRange(0.600, 1);
     endLinear = std::chrono::high_resolution_clock::now();
     durationLinear = endLinear - startLinear;
-    cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
+    std::cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
 
     // /**
     //  * Experiment 5 - Delete movies with FG_PCT_home <= 0.35, update B+ Tree and report statistics
