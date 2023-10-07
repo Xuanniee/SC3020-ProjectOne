@@ -21,30 +21,6 @@ int bytesToHome(unsigned char num){
     return out;
 }
 
-// unsigned short int floatToBytes(double num){
-//     //at most 3 s.f. 
-//     unsigned short int bytes;
-//     // First bit indicates if 1 or 0. Remaining 7 bits are for decimal. (2B)
-//     if (num>=1){
-//         num = num-1;
-//         num = num*1000 + pow(2, 15); // put the MSB as 1 if the before decimal is 1
-//     }else{
-//         num = num*1000;
-//     }
-//     bytes = static_cast<unsigned short int>(num);
-//     return bytes;
-// }
-
-// float bytesToFloat(unsigned short int num){
-//     float out =0 ;
-//     if (num >=32768){
-//         num -= 32768;
-//         out += 1;
-//     }
-//     out = out + static_cast<float>(num)/1000;
-//     return out;
-// }
-
 unsigned short int floatToBytes(double num) {
     // Convert to an integer by multiplying by 1000 and adding 0.5 for rounding.
     int intPart = static_cast<int>(num * 1000 + 0.5);
