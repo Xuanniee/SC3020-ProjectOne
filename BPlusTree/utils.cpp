@@ -8,15 +8,15 @@
 void _shift(LeafNode* node, int src, int dir) {
     int n = (dir==1 ? node->numKeysInserted++ : node->numKeysInserted--) - src;
     if (!n || src+dir<0) return;
-    std::memcpy(node->records+src+dir, node->records+src, n*sizeof(Record*));
-    std::memcpy(node->keys+src+dir, node->keys+src, n*sizeof(unsigned short int)); 
+    std::memmove(node->records+src+dir, node->records+src, n*sizeof(Record*));
+    std::memmove(node->keys+src+dir, node->keys+src, n*sizeof(unsigned short int)); 
 }
 
 
 void _shift(InternalNode* node, int src, int dir) {
     int n = (dir==1 ? node->numKeysInserted++ : node->numKeysInserted--) - src;
-    if (n>=0) std::memcpy(node->children+src+dir, node->children+src, (n+1)*sizeof(Record*));
-    if (n>0) std::memcpy(node->keys+src+dir, node->keys+src, n*sizeof(unsigned short int)); 
+    if (n>=0) std::memmove(node->children+src+dir, node->children+src, (n+1)*sizeof(Record*));
+    if (n>0) std::memmove(node->keys+src+dir, node->keys+src, n*sizeof(unsigned short int)); 
 }
 
 
