@@ -397,6 +397,12 @@ std::vector<Record*> BlockManager :: findRecordsInRange(Record* low, Record* upp
                 }
             }
     }
+    unsigned short int endRecordKey = listBlocks[endBlockIndex].records[endRecordIndex].fgPctHomeByteArray;
+    for (int i = endRecordIndex+1; i < listBlocks[endBlockIndex].numRecords; i++) {
+        if (listBlocks[endBlockIndex].records[i].fgPctHomeByteArray == endRecordKey) {
+            res.push_back(&listBlocks[endBlockIndex].records[i]);
+        }
+    }
 
     cout << "Number of Data Blocks Accessed: " << numDataBlocksAccessed << endl;
 
