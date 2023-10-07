@@ -121,7 +121,7 @@ class BPlusTree {
          * 
          * @return int 
          */
-        int countNodesInBPlusTree(Node* rootNode);
+        int countNodesInBPlusTree(Node* rootNode, int currHeight);
 };
 
 #endif

@@ -282,7 +282,7 @@ void BlockManager ::insertRecord(Record rec)
 {
     int ib, ir;
     float pk = bytesToFloat(rec.fgPctHomeByteArray);
-    
+
     //invalid Record
     if (pk == 0){
         invalidRecords++;
@@ -307,14 +307,15 @@ void BlockManager ::buildIndex(BPlusTree *btree)
 {
     if (btree->getRoot() == NULL)
     {
-        btree->setRoot((Node *)malloc(sizeof(Node)));
+        btree->setRoot((LeafNode *)malloc(sizeof(LeafNode)));
+        btree->setHeight(1);
     }
 
     for (int i = 0; i < numDataBlocks; i++)
     {
         for (int j = 0; j < listBlocks[i].numRecords; j++)
         {
-            btree->insertKeyInTree(bytesToFloat(listBlocks[i].records[j].fgPctHomeByteArray), &listBlocks[i].records[j]);
+            btree->insertKeyInTree(listBlocks[i].records[j].fgPctHomeByteArray, &listBlocks[i].records[j]);
         }
     }
 }
@@ -388,7 +389,9 @@ std::vector<Record*> BlockManager :: findRecordsInRange(Record* low, Record* upp
     for (int i = startBlockIndex; i <= endBlockIndex; i++) {
         for (int j = i == startBlockIndex ? startRecordIndex : 0; 
             j <= i == endBlockIndex ? endRecordIndex : listBlocks[i].numRecords-1; j++) {
-                res.push_back(&listBlocks[i].records[j]);
+                if (listBlocks[i].records[j].fgPctHomeByteArray != 2) {
+                    res.push_back(&listBlocks[i].records[j]);
+                }
             }
     }
 
