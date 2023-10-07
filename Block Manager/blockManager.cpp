@@ -445,8 +445,7 @@ void BlockManager ::linearScanKey(float keyValue1){
         numBlk--;
     }
 
-    std::cout<<"=========Brute-force Linear Search=========" <<endl;
-    std::cout << "Number of Data Blocks Access: " << numBlk+1 << endl;
+    std::cout << "Number of Data Blocks Accessed (Linear Scan): " << numBlk+1 << endl;
     std::cout << "Average of FG3_PCT_HOME: " << avg_FG3/numRec << endl;    
 
 }

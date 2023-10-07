@@ -144,7 +144,7 @@ int BPlusTree::insertKeyInTree(unsigned short int key, Record* targetRecord) {
     // Will retrieve the actual record, but won't be relevant in this function
     Record **recordPtr = NULL;
     // Search the Tree to see if the B+ tree contains the Record Key
-    bool searchResult = findRecordInTree(key, myStackPtr, recordPtr);
+    bool searchResult = findRecordInTree(key, myStackPtr, recordPtr, false);
 
     // Check if the Key Value exists in the B+ Tree
     if (searchResult) {
@@ -467,8 +467,11 @@ int BPlusTree::insertKeyInTree(unsigned short int key, Record* targetRecord) {
 
 // }
 
-bool BPlusTree :: findRecordInTree(unsigned short int key, std::stack<Node*> *stackPtr, Record **recordPtr) {
+bool BPlusTree :: findRecordInTree(unsigned short int key, std::stack<Node*> *stackPtr, Record **recordPtr, bool calculatingStats) {
+    // Track the Number of Index & Data Blocks Accessed
     int numIndexBlocks = 1;
+    int numDataBlocks = 0;
+
     stackPtr->push(root);
     // INCREMENT LOAD COUNTER
     Node* next = NULL;
@@ -490,9 +493,13 @@ bool BPlusTree :: findRecordInTree(unsigned short int key, std::stack<Node*> *st
         next = NULL;
     }
 
+    // Look for Record in Leaf Index Block
+    int recordFirstAppearanceIndex = 0;
     for (int j = 0; j < stackPtr->top()->numKeysInserted; j++) {
+        numDataBlocks += 1;
         if (stackPtr->top()->keys[j] == key) {
             r = ((LeafNode*) stackPtr->top())->records[j];
+            recordFirstAppearanceIndex = j;
             found = true;
             break;
         }
@@ -504,8 +511,53 @@ bool BPlusTree :: findRecordInTree(unsigned short int key, std::stack<Node*> *st
         }
     }
 
-    // Print the Number of Index Blocks Accessed
-    // std::cout << "Number of Index Nodes Accessed: " << numIndexBlocks << std::endl;
+    if (calculatingStats) {
+        // Determine the Average FG_PCT_home of records
+        float sumFG3 = 0.0;
+        int numRecs = 0;
+        if (found) {
+            // Retrieve the Datablock that the target record first appeared in
+            LeafNode* targetBlock = (LeafNode*) stackPtr->top();;
+            bool foundRecord = true;
+
+            while (foundRecord) {
+                // Iterate from the target record
+                for (int i = recordFirstAppearanceIndex; i < targetBlock->numKeysInserted; i += 1) {
+                    if (targetBlock->keys[i] == key && targetBlock->records[i]->fg3PctHomeByteArray != 0) {
+                        // Found a matching record
+                        foundRecord = true;
+                        numRecs += 1;
+                        sumFG3 += bytesToFloat(targetBlock->records[i]->fg3PctHomeByteArray);
+                    }
+                    else {
+                        // No more record with this key value
+                        foundRecord = false;
+                        break;
+                    }
+                }
+
+                if (foundRecord) {
+                    // Reach end of datablock but still may have target block
+                    targetBlock = targetBlock->next;
+                    
+                    // Increment Datablock since we need load another
+                    numDataBlocks += 1;
+                }
+            }
+
+
+        }
+        // Print Statistics
+        std::cout << "Number of Index Nodes Accessed: " << numIndexBlocks << std::endl;
+        std::cout << "Number of Data Blocks Accessed: " << numDataBlocks << std::endl;
+        if (numRecs == 1) {
+            std::cout << "Average of FG3_PCT_home records returned: " << bytesToFloat(r->fg3PctHomeByteArray) << std::endl;
+        }
+        else {
+            std::cout << "Average of FG3_PCT_home records returned: " << sumFG3/numRecs << std::endl;
+        }
+        
+    }
     return found;
 }
 

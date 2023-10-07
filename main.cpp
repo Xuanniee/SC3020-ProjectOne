@@ -55,48 +55,41 @@ int main() {
     bPlusTree.printRootNodeKeys(); 
     cout << "." << endl;
 
-    // LeafNode* curr = (LeafNode*) ((InternalNode*) bPlusTree.getRoot())->children[0];
+    LeafNode* curr = (LeafNode*) ((InternalNode*) bPlusTree.getRoot())->children[0];
 
-    // int cnt = 0;
-    // while (curr != NULL) {
-    //     for (int i = 0; i < curr->numKeysInserted; i++) {
-    //         cnt++;
-    //         cout << curr->keys[i] << endl;
-    //     }
-    //     curr = curr->next;
-    // }
-    // cout << "COUNT " << cnt << endl;
+    int cnt = 0;
+    while (curr != NULL) {
+        for (int i = 0; i < curr->numKeysInserted; i++) {
+            cnt++;
+            cout << curr->keys[i] << endl;
+        }
+        curr = curr->next;
+    }
+    cout << "COUNT " << cnt << endl << endl << endl;
 
-    // /**
-    //  * Experiment 3 - Retrieve movies with "FG_PCT_home" equal to 0.5, both inclusively and report the statistics.
-    //  */
-    // // Index Database Retrieval    
-    // stack<Node*> *myStackPtr;
-    // Record **recordPtr = NULL;
-    // auto startIndex = std::chrono::high_resolution_clock::now();
-    // bPlusTreePtr->findRecordInTree(0.5, myStackPtr, recordPtr);
-    // auto endIndex = std::chrono::high_resolution_clock::now();
-    // std::chrono::duration<double> durationNormal = endIndex - startIndex;
-    
-    // // Linear Scan Retrieval
-    // auto startLinear = std::chrono::high_resolution_clock::now();
-    // blockManager.linearScanKey(0.500);
-    // // Insert Linear Scan Method
-    // auto endLinear = std::chrono::high_resolution_clock::now();
-    // std::chrono::duration<double> durationLinear = endLinear - startLinear;
-    // std::cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" <<endl;
+    /**
+     * Experiment 3 - Retrieve movies with "FG_PCT_home" equal to 0.5, both inclusively and report the statistics.
+     */
+    cout << "Experiment 3 Results:" << endl;
 
+    // Index Database Retrieval    
+    stack<Node*> myStack;
+    Record **recordPtr = NULL;
+    auto startIndex = std::chrono::high_resolution_clock::now();
+    bPlusTree.findRecordInTree(0.5, &myStack, recordPtr, true);
+    auto endIndex = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> durationNormal = endIndex - startIndex;
 
-    // cout << "Experiment 3 Results:" << endl;
-    
-    // cout << "Number of Data Blocks Accessed:" << endl;
-    // cout << "Average of FG_PCT_home records returned:" << endl;
-    // cout << "Running Time of Retrieval Process: " << durationNormal.count() << " seconds" << endl;
-    // // TODO Specify Method
+    cout << "Running Time of Retrieval Process: " << durationNormal.count() << " seconds" << endl;
+    // TODO Specify Method
 
-    // // Linear will be printed inside the function
-    // // cout << "Number of Data Blocks Accessed (Linear Scan):" << endl;
-    // // cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
+    // Linear Scan Retrieval
+    auto startLinear = std::chrono::high_resolution_clock::now();
+    blockManager.linearScanKey(0.500);
+    auto endLinear = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> durationLinear = endLinear - startLinear;
+
+    cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
 
     // /**
     //  * Experiment 4 - Retrieve those movies with FG_PCT_home from 0.6 to 1, both inclusively and report statistics
