@@ -15,12 +15,12 @@ If there are any issues, the compiled files can be cleaned using ```make clean``
 
 If issues arise preventing the use of makefile, the source files can be compiled manually as well with the following commands
 
-1. ```g++ -std=c++17 -c loadData.cpp -IRecord -o loadData.o```
-2. ```g++ -std=c++17 -c BPlusTree/utils.cpp -INode/ -IRecord/ -o utils.o```
-3. ```g++ -std=c++17 -c Node/node.cpp -IRecord/ -o node.o```
-4. ```g++ -std=c++17 -c BPlusTree/bPlusTree.cpp -INode/ -IRecord/ -o bPlusTree.o```
-5. ```g++ -std=c++17 -c Block\ Manager/blockManager.cpp -IBPlusTree/ -INode/ -IRecord/ -o blockManager.o```
-6. ```g++ -std=c++17 -c main.cpp -IBlock\ Manager / -IBPlusTree -INode/ -IRecord/ -o main.o```
+1. ```g++ -std=c++17 -c loadData.cpp -I Record -o loadData.o```
+2. ```g++ -std=c++17 -c BPlusTree/utils.cpp -I Node/ -I Record/ -o utils.o```
+3. ```g++ -std=c++17 -c Node/node.cpp -I Record/ -o node.o```
+4. ```g++ -std=c++17 -c BPlusTree/bPlusTree.cpp -I Node/ -I Record/ -o bPlusTree.o```
+5. ```g++ -std=c++17 -c "Block Manager/blockManager.cpp" -I BPlusTree/ -I Node/ -I Record/ -o blockManager.o```
+6. ```g++ -std=c++17 -c main.cpp -I "Block Manager/" -I BPlusTree -I Node/ -I Record/ -o main.o```
 7. ```g++ -std=c++17 -o main main.o blockManager.o bPlusTree.o node.o loadData.o utils.o```
 
 
