@@ -24,4 +24,9 @@ If issues arise preventing the use of makefile, the source files can be compiled
 7. ```g++ -std=c++17 -o main main.o blockManager.o bPlusTree.o node.o loadData.o utils.o```
 
 
+### Windows
+```
+g++ "Block Manager/blockManager.cpp" "BPlusTree/bPlusTree.cpp" "BPlusTree/utils.cpp" "Node/node.cpp" "loadData.cpp" "main.cpp" -o main;.\main
+```
+
 If no errors arise then the main executable can be run using ```./main```
