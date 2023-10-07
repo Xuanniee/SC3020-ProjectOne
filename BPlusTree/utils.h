@@ -9,7 +9,7 @@
  * @param st Ancestry stack
  * @param key Smallest key value
 */
-void _updateFirstLeft( std::vector<std::pair<Node*, int> > st, float key);
+void _updateFirstLeft( std::vector<std::pair<Node*, int> > st, unsigned short int key);
 
 
 /**
@@ -62,4 +62,4 @@ void _shift(LeafNode* node, int src, int dir);
  * 
  * @return Key value
 */
-float _leftmost(Node* node);
+unsigned short int _leftmost(Node* node);
