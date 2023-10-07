@@ -147,7 +147,7 @@ class BlockManager {
          * 
          * @param keyValue1 lower limit 
          * @param keyValue2 upper limit if applicable
-         * @param lower_than if true, search will be lower or equal to keyValue1, else, search will be higher or equal to keyValue2 
+         * @param lower_than if true, search will be lower or equal to keyValue1, else, search will be higher or equal to keyValue1 
          */
        void linearScanRange(float keyValue1,  float keyValue2 = -1, bool lower_than = false);
 

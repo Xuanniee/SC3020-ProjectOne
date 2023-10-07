@@ -10,6 +10,7 @@
 
 using namespace std;
 
+
 int main() {
     /*
     ============== INSERTING RECORDS TO BLOCK MANAGER ==============
@@ -187,37 +188,39 @@ int main() {
     durationLinear = endLinear - startLinear;
     std::cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl << endl;
 
-    // /**
-    //  * Experiment 5 - Delete movies with FG_PCT_home <= 0.35, update B+ Tree and report statistics
-    //  */
-    // startIndex = std::chrono::high_resolution_clock::now();
-    // // Delete and Update B+ Tree Function
-    // endIndex = std::chrono::high_resolution_clock::now();
-    // durationNormal = endIndex - startIndex;
+    /**
+     * Experiment 5 - Delete movies with FG_PCT_home <= 0.35, update B+ Tree and report statistics
+     */
+    startIndex = std::chrono::high_resolution_clock::now();
+    // Delete and Update B+ Tree Function
+    endIndex = std::chrono::high_resolution_clock::now();
+    durationNormal = endIndex - startIndex;
     
-    // // Linear Scan Retrieval
-    // startLinear = std::chrono::high_resolution_clock::now();
-    // // Insert Linear Scan Method
-    // blockManager.linearScanRange(0.35, -1, true);
-    // endLinear = std::chrono::high_resolution_clock::now();
-    // durationLinear = endLinear - startLinear;
-    // cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
+    // Linear Scan Retrieval
+    startLinear = std::chrono::high_resolution_clock::now();
+    // Insert Linear Scan Method
+    blockManager.linearScanRange(0.35, -1, true);
+    endLinear = std::chrono::high_resolution_clock::now();
+    durationLinear = endLinear - startLinear;
+    cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
 
+    // B+ Tree deletion
+    blockManager.deleteRange(&bPlusTree, 0, 0.35);
 
-    // // Updated Nodes and Height
-    // bPlusTreeHeight = bPlusTreePtr->getHeight();
-    // numNodes = bPlusTreePtr->countNodesInBPlusTree(bPlusTreePtr->getRoot());
+    // Updated Nodes and Height
+    bPlusTreeHeight = bPlusTree.getHeight();
+    numNodes = bPlusTree.countNodesInBPlusTree(bPlusTree.getRoot(), bPlusTree.getHeight());
 
-    // cout << "========= B+ Tree Statistics =========" << endl;
-    // cout << "Number of Nodes of Updated B+ Tree: " << numNodes << endl;
-    // cout << "Number of Levels of the Updated B+ Tree: " << bPlusTreeHeight << endl;
-    // cout << "Content of the Root Node (Only Keys): ";
-    // bPlusTreePtr->printRootNodeKeys(); 
-    // cout << "." << endl;
-    // cout << "Running Time of Retrieval Process: " << durationNormal.count() << " seconds" << endl;
-    // // Linear will be printed inside the function
-    // // cout << "Number of Data Blocks Accessed (Linear Scan):" << endl;
-    // // cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
+    cout << "========= B+ Tree Statistics =========" << endl;
+    cout << "Number of Nodes of Updated B+ Tree: " << numNodes << endl;
+    cout << "Number of Levels of the Updated B+ Tree: " << bPlusTreeHeight << endl;
+    cout << "Content of the Root Node (Only Keys): ";
+    bPlusTree.printRootNodeKeys(); 
+    cout << "." << endl;
+    cout << "Running Time of Retrieval Process: " << durationNormal.count() << " seconds" << endl;
+    // Linear will be printed inside the function
+    cout << "Number of Data Blocks Accessed (Linear Scan):" << endl;
+    cout << "Running Time of Retrieval Process (Linear Scan): " << durationLinear.count() << " seconds" << endl;
 
     return 0;
 }
