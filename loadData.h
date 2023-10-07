@@ -18,7 +18,7 @@ unsigned char homeToBytes(int num);
 
 int bytesToHome(unsigned char num);
 
-unsigned short int floatToBytes(float num);
+unsigned short int floatToBytes(double num);
 
 float bytesToFloat(unsigned short int num);
 
