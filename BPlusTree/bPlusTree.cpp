@@ -9,6 +9,7 @@
 #include <vector>
 #include <tuple>
 #include "bPlusTree.h"
+#include "utils.h"
 #include "../loadData.h"
 
 /**
@@ -611,28 +612,14 @@ void BPlusTree :: _updateUpstream(Node*, std::vector<std::pair<Node*, int> > st)
             // borrow from left sibling
             _shift(node, 0, 1); // make space for borrowed key
             node->children[0] = sibling->children[sibling->numKeysInserted--];
-
-            temp = node->children[1];
-            while (dynamic_cast<InternalNode*>(temp)) {
-                temp = ((InternalNode*) temp)->children[0];
-            }
-            node->keys[0] = temp->keys[0];
-
-            temp = node->children[0];
-            while (dynamic_cast<InternalNode*>(temp)) {
-                temp = ((InternalNode*) temp)->children[0];
-            }
-            parent->keys[offset_parent-1] = temp->keys[0];
+            node->keys[0] = _leftmost(node->children[1]);
+            parent->keys[offset_parent-1] = _leftmost(node->children[0]);
         } else {
             // borrow from right sibling
             node->keys[node->numKeysInserted++] = sibling->children[0]->keys[0];
             node->children[node->numKeysInserted] = sibling->children[0];
             _shift(sibling, 1, -1); // delete sibling's first key & ptr
-            temp = sibling->children[0];
-            while (dynamic_cast<InternalNode*>(temp)) {
-                temp = ((InternalNode*) temp)->children[0];
-            }
-            parent->keys[i_sibling-1] = temp->keys[0];
+            parent->keys[i_sibling-1] = _leftmost(sibling->children[0]);
         }
         return;
     }

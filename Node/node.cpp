@@ -1,5 +1,6 @@
 #include <cstring>
 #include <cstdlib>
+#include "../BPlusTree/utils.h"
 #include "node.h"
 
 
@@ -24,7 +25,6 @@ void InternalNode :: mergeLeft(InternalNode* left) {
 
 void InternalNode :: mergeRight(InternalNode* right) {
     int n = right->numKeysInserted;
-    Node* curr;
 
     // make space in dest
     std::memcpy(right->keys+(++numKeysInserted), right->keys, n*sizeof(float));
@@ -34,11 +34,7 @@ void InternalNode :: mergeRight(InternalNode* right) {
     std::memcpy(right->children, children, (numKeysInserted--)*sizeof(Node*));
     std::memcpy(right->keys, keys, numKeysInserted*sizeof(float));
 
-    curr = right->children[numKeysInserted+1];
-    while (dynamic_cast<InternalNode*>(curr)) {
-        curr = ((InternalNode*) curr)->children[0];
-    }
-    right->keys[numKeysInserted] = curr->keys[0];
+    right->keys[numKeysInserted] = _leftmost(right->children[numKeysInserted+1]);
     right->numKeysInserted += numKeysInserted+1;
     free(this);
 }
