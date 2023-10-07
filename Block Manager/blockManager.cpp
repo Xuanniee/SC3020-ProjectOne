@@ -336,9 +336,10 @@ void BlockManager ::deleteRange(BPlusTree *btree, float low, float upp)
     Record** recs;
     vector<float> to_del;
     LeafNode* leaf;
+    Record *st, *end;
     unsigned short int *keys;
     unsigned short int ulow = floatToBytes(low), uupp = floatToBytes(upp);
-    int i;
+    int i, j, st_bk, st_rk, end_bk, end_rk;;
 
     for (int _ = 1; _ < btree->getHeight(); _++) {
         keys = curr->keys;
@@ -352,7 +353,10 @@ void BlockManager ::deleteRange(BPlusTree *btree, float low, float upp)
     leaf = (LeafNode*) curr;
     keys = curr->keys;
     for (i = 0; i < curr->numKeysInserted; i++) {
-        if (keys[i] >= ulow) break;
+        if (keys[i] >= ulow) {
+            st = leaf->records[i];
+            break;
+        }
     }
 
     // acquire all keys to be deleted
@@ -361,15 +365,28 @@ void BlockManager ::deleteRange(BPlusTree *btree, float low, float upp)
         recs = leaf->records;
 
         for (i = 0; i < leaf->numKeysInserted; i++) {
-            if (keys[i] <=  uupp) to_del.push_back(keys[i]);
-            else break;         
+            if (keys[i] <=  uupp) {
+                to_del.push_back(keys[i]);
+                end = recs[i];
+            } else break;
         }
         leaf = leaf->next;
     }
 
     // update index
     for (unsigned short int f : to_del) {
-        btree->updateIndex(f);
+        if (!st) st = btree->updateIndex(f);
+        else btree->updateIndex(f);
+    }
+
+    // mark as deleted
+    std::tie(st_bk, st_rk) = getBlockFromAddress(st);
+    std::tie(end_bk, end_rk) = getBlockFromAddress(end);
+    
+    for (i=st_bk; i<end_bk; i++) {
+        for (j=0; j<MAX_RECORDS; j++) {
+            listBlocks[i].records[j].fgPctHomeByteArray = floatToBytes(2.0);
+        }
     }
 }
 
@@ -396,6 +413,12 @@ std::vector<Record*> BlockManager :: findRecordsInRange(Record* low, Record* upp
                     res.push_back(&listBlocks[i].records[j]);
                 }
             }
+    }
+    unsigned short int endRecordKey = listBlocks[endBlockIndex].records[endRecordIndex].fgPctHomeByteArray;
+    for (int i = endRecordIndex+1; i < listBlocks[endBlockIndex].numRecords; i++) {
+        if (listBlocks[endBlockIndex].records[i].fgPctHomeByteArray == endRecordKey) {
+            res.push_back(&listBlocks[endBlockIndex].records[i]);
+        }
     }
 
     cout << "Number of Data Blocks Accessed: " << numDataBlocksAccessed << endl;
