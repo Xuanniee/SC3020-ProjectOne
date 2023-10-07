@@ -130,7 +130,6 @@ std::pair<int,int> BlockManager :: findRecordBinarySearch(float keyValue) {
             }
 
             // Non-Existent Record
-            int insertionIndex = 0;
 
             // Determine where to place the record to be inserted
             for (int i = 0; i < numRecords; i += 1)
@@ -382,6 +381,8 @@ void BlockManager ::deleteRange(BPlusTree *btree, float low, float upp)
     // mark as deleted
     std::tie(st_bk, st_rk) = getBlockFromAddress(st);
     std::tie(end_bk, end_rk) = getBlockFromAddress(end);
+
+    std::cout << st_bk << ", " << st_rk << st_bk << ", " << end_bk << ", " << end_rk << std::endl;
     
     for (i=st_bk; i<end_bk; i++) {
         for (j=0; j<MAX_RECORDS; j++) {
@@ -460,11 +461,11 @@ void BlockManager ::linearScanKey(float keyValue1){
                 numRec++;
             }
             //check if the records are found finish already --> stop accessing blocks
-            if (numRec == prevNum & numRec != 0){
+            if (numRec == prevNum && numRec != 0){
                 break;
             }
         }
-        if (numRec == prevNum & numRec != 0){
+        if (numRec == prevNum && numRec != 0){
             break;
         }
     }
@@ -514,11 +515,11 @@ void BlockManager ::linearScanRange(float keyValue1, float keyValue2, bool lower
                 }
                 
                 //check if the records are found finish already --> stop accessing blocks
-                if (numRec == prevNum & numRec != 0){
+                if (numRec == prevNum && numRec != 0){
                     break;
                 }
             }
-            if (numRec == prevNum & numRec != 0){
+            if (numRec == prevNum && numRec != 0){
                 break;
             }
             
@@ -542,11 +543,11 @@ void BlockManager ::linearScanRange(float keyValue1, float keyValue2, bool lower
                     avg_FG3 += bytesToFloat(curRec.fg3PctHomeByteArray);
                     numRec++;
                 }
-                if (numRec == prevNum & numRec != 0){
+                if (numRec == prevNum && numRec != 0){
                     break;
                 }
             }
-            if (numRec == prevNum & numRec != 0){
+            if (numRec == prevNum && numRec != 0){
                 break;
             }
         }
