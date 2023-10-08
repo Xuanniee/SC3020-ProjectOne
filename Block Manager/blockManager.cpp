@@ -308,6 +308,7 @@ void BlockManager ::buildIndex(BPlusTree *btree)
     if (btree->getRoot() == NULL)
     {
         btree->setRoot((LeafNode *)malloc(sizeof(LeafNode)));
+        btree->getRoot()->numKeysInserted=0;
         btree->setHeight(1);
     }
 

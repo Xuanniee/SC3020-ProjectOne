@@ -172,7 +172,8 @@ int BPlusTree::insertKeyInTree(unsigned short int key, Record* targetRecord) {
 
     // Case 2 - Leaf Node is full, has (n+1) keys now. 
     // Create a new sibling leaf node
-    Node *newLeafNode = (Node*) malloc(sizeof(LeafNode));
+    Node *newLeafNode = (Node*) (new LeafNode());
+    newLeafNode->numKeysInserted = 0;
    ((LeafNode*) newLeafNode)->next = NULL;
 
     // Distribute the keys - MUST ALWAYS BE 40 else, sth is wrong
@@ -306,7 +307,8 @@ int BPlusTree::insertKeyInTree(unsigned short int key, Record* targetRecord) {
             }
 
             // Create a Sibling Node to Parent, i.e. Uncle Node
-            InternalNode *newUncleNode = (InternalNode*) malloc(sizeof(InternalNode));
+            InternalNode *newUncleNode = (InternalNode*) (new InternalNode());
+            newUncleNode->numKeysInserted = 0;
 
             // Copy over the Keys and Children of original node to the uncle node
             int counter = 0;
