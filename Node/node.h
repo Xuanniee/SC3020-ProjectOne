@@ -13,6 +13,7 @@ typedef struct Node {
     unsigned short int keys[NUM_KEYS];
     int numKeysInserted;
 
+    Node() : numKeysInserted(0) {};
     virtual ~Node() {};
 } Node;
 
@@ -40,6 +41,8 @@ typedef struct InternalNode: Node {
 typedef struct LeafNode: Node {
     Record* records[NUM_KEYS];
     LeafNode* next;
+
+    LeafNode() : next(NULL) {};
 
     /**
      * @brief Merge current node with a sibling leaf node on the left
